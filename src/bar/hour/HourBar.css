@@ -1,0 +1,12 @@
+
+.hour-bar {
+    padding: 0 1rem;
+    border-right: 1px solid black;
+    border-left: 1px solid black;
+}
+
+.hour-step {
+    display: flex;
+    align-self: center;
+    justify-self: center;
+}
