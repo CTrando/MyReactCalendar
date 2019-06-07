@@ -27,7 +27,6 @@ export class WeekCalendar extends React.PureComponent {
         if (!this.props.events)
             return DEFAULT_MIN_HOUR;
         let startHours = this.props.events.map(e => e.start.getHours());
-        console.log(startHours);
         // subtracting one to have some more space
         return Math.min(...startHours) - 1;
     }
@@ -41,7 +40,30 @@ export class WeekCalendar extends React.PureComponent {
         return Math.max(...endHours) + 1;
     }
 
+    getWeekCalendarStyle() {
+        return {
+            // extra 1 for the time bar
+            gridTemplateRows: `repeat(${this.getMaxHour() - this.getMinHour() + 1}, 1fr)`,
+
+            // extra 1 for the day bar
+            gridTemplateColumns: `repeat(${this.state.numDays + 1}, 1fr)`
+        }
+    }
+
     render() {
+        return (
+            <div style={this.getWeekCalendarStyle()} className="wc-container">
+                <DayBar numDays={this.state.numDays}/>
+
+                <HourBar startHour={this.getMinHour()} endHour={this.getMaxHour()}/>
+
+                <EventCalendar startHour={this.getMinHour()}
+                               endHour={this.getMaxHour()}
+                               numDays={this.state.numDays}
+                               events={this.props.events}/>
+            </div>
+        )
+        /*
         return (
             <div className="week-calendar-container">
                 <DayBar  numDays={this.state.numDays}/>
@@ -58,7 +80,7 @@ export class WeekCalendar extends React.PureComponent {
                     </div>
                 </div>
             </div>
-        )
+        )*/
     }
 }
 

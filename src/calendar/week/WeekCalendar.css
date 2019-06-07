@@ -12,3 +12,8 @@
     display: grid;
     grid-template-columns: min-content 1fr;
 }
+
+.wc-container {
+    height: 100%;
+    display: grid;
+}

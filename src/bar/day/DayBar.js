@@ -11,6 +11,12 @@ export class DayBar extends React.PureComponent {
         };
     }
 
+    getDayStyle(start) {
+        return {
+            gridColumn: `${start} / ${start+1}`
+        };
+    }
+
     getDays() {
         const ret = [];
         let curDay = startOfWeek(new Date(), {weekStartsOn: 1});
@@ -18,7 +24,7 @@ export class DayBar extends React.PureComponent {
             const dayStr = format(curDay, "ddd");
             curDay = addDays(curDay, 1);
             ret.push(
-                <div key={dayStr} className="day">
+                <div key={dayStr} className="day" style={this.getDayStyle(i + 2)}>
                     {dayStr}
                 </div>
             )
@@ -28,12 +34,9 @@ export class DayBar extends React.PureComponent {
 
     render() {
         return (
-            <div style={this.getDayBarStyle()} className="day-bar">
-                <div className="invis-time">
-                    <div style={{visibility: "hidden"}}>00:00 am</div>
-                </div>
+            <React.Fragment>
                 {this.getDays()}
-            </div>
+            </React.Fragment>
         )
     }
 }

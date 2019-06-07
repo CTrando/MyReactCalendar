@@ -5,8 +5,12 @@
     border-left: 1px solid black;
 }
 
-.hour-step {
+.hour-step-container {
     display: flex;
-    align-self: center;
-    justify-self: center;
+    align-items: center;
+    justify-content: center;
+
+    border-right: 1px solid black;
 }
+
+

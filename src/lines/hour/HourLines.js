@@ -10,8 +10,8 @@ export class HourLines extends React.PureComponent {
         for (let i = this.props.startHour; i < this.props.endHour; i++) {
             const hourTime = `${i}:00`;
             ret.push((
-                <div key={hourTime + "hour-line"} className="hour-line">
-                </div>
+                <div key={hourTime + "hour-line"}
+                     className="hour-line" />
             ))
         }
         return ret;

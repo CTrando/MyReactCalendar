@@ -17,6 +17,12 @@ export class HourBar extends React.PureComponent {
         };
     }
 
+    getHourStyle(start) {
+        return {
+            gridRow: `${start} / ${start + 1}`
+        };
+    }
+
     getHours() {
         const ret = [];
         const curTime = new Date();
@@ -26,9 +32,14 @@ export class HourBar extends React.PureComponent {
             curTime.setHours(i);
             const hourTime = format(curTime, "ha");
             ret.push((
-                <div key={hourTime} className="hour-step">
-                    {hourTime}
-                </div>
+                <React.Fragment>
+                    <div key={hourTime} style={this.getHourStyle(i - this.props.startHour + 2)}
+                         className="hour-step-container">
+                        <div>
+                            {hourTime}
+                        </div>
+                    </div>
+                </React.Fragment>
             ));
         }
         return ret;
@@ -36,9 +47,9 @@ export class HourBar extends React.PureComponent {
 
     render() {
         return (
-            <div className="hour-bar" style={this.getHourBarStyle()}>
+            <React.Fragment>
                 {this.getHours()}
-            </div>
+            </React.Fragment>
         );
     }
 }
