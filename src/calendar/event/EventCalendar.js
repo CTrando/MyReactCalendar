@@ -1,12 +1,37 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import {Event} from './Event';
 
 import "./EventCalendar.css";
-import {startOfWeek, differenceInCalendarDays} from "date-fns";
 import {DayLines} from "../../lines/day/DayLines";
 import {HourLines} from "../../lines/hour/HourLines";
+import {decodeEvent} from "../../decoder/MouseDecoder";
 
 export class EventCalendar extends React.PureComponent {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            draggedEvent: null
+        }
+    }
+
+    onEventDrag(evt, key) {
+        console.log(key);
+        this.setState({draggedEvent: key});
+    }
+
+    allowDrag(e) {
+        e.preventDefault();
+    }
+
+    onEventDrop(evt, dayDropped) {
+        console.log(`Event with key ${this.state.draggedEvent} was dropped on day ${dayDropped}`);
+        const {hour, day} = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
+
+        if(this.props.onEventDrop)
+            this.props.onEventDrop(this.state.draggedEvent, day, hour);
+    }
 
     getEventCalendarStyle() {
         const earliestHour = this.props.startHour;
@@ -21,46 +46,24 @@ export class EventCalendar extends React.PureComponent {
         }
     }
 
-    getEventStyle(start, end) {
-        const referenceStart = startOfWeek(start, {weekStartsOn: 1});
-        const eventCol = differenceInCalendarDays(start, referenceStart) + 1;
-
-        const startTime5MinuteIntervals = Math.floor((start.getHours() - this.props.startHour) * 12) + Math.floor(start.getMinutes() / 5) + 1;
-        const endTime5MinuteIntervals = Math.floor((end.getHours() - this.props.startHour) * 12) + Math.floor(end.getMinutes() / 5) + 1;
-
-        return {
-            position: "relative",
-            backgroundColor: "grey",
-            gridRow: `${startTime5MinuteIntervals}/${endTime5MinuteIntervals}`,
-
-            // only support events that start and end on the same day, so can just use one
-            gridColumn: `${eventCol}/${eventCol}`,
-            border: "1px solid white",
-            zIndex: 1,
-        }
-    }
-
     getEventDivs() {
         return this.props.events.map((evt) => {
-            const style = this.getEventStyle(evt.start, evt.end);
-
+            const style = evt.getEventStyle(this.props.startHour);
             return (
-                <div key={"event" + evt.start + evt.end} style={style}>
+                <div key={evt.id} style={style}>
                     <div
                         draggable
-                        onDragStart={() => console.log("hello drag start")}
-                        onDragOver={(e) => {
-                            e.preventDefault();
-                            console.log("hello world")
-                        }}
-                        onDrop={(e) => {
-                            console.log("dropped on an event")
-                        }}
-                        onClick={() => console.log("clicked on an event")} style={{height: "100%"}}>
-                        hello world
+                        key={evt.start.toString() + evt.end.toString()}
+                        onDrag={(e) => this.onEventDrag(e, evt.id)}
+                        // have to normalize getDay() because it thinks start of week is on sunday
+                        onDrop={(e) => this.onEventDrop(e, evt.start.getDay() - 1)}
+                        onDragOver={this.allowDrag}
+                        style={{height: "100%"}}>
+
+                        {evt.getView(this.props.startHour)}
                     </div>
                 </div>
-            )
+            );
         });
     }
 
@@ -76,8 +79,8 @@ export class EventCalendar extends React.PureComponent {
         return (
             <div style={this.getEventCalendarWrapperStyle()}>
                 <HourLines startHour={this.props.startHour} endHour={this.props.endHour}/>
-                <DayLines numDays={this.props.numDays}/>
-                <div style={this.getEventCalendarStyle()} className="event-calendar">
+                <DayLines numDays={this.props.numDays} onEventDrop={this.onEventDrop.bind(this)}/>
+                <div id="event-calendar" style={this.getEventCalendarStyle()} className="event-calendar">
                     {this.getEventDivs()}
                 </div>
             </div>
@@ -86,11 +89,9 @@ export class EventCalendar extends React.PureComponent {
 }
 
 EventCalendar.propTypes = {
+    onEventDrop: PropTypes.func,
     startHour: PropTypes.number.isRequired,
     endHour: PropTypes.number.isRequired,
     numDays: PropTypes.number.isRequired,
-    events: PropTypes.arrayOf(PropTypes.shape({
-        start: PropTypes.instanceOf(Date).isRequired,
-        end: PropTypes.instanceOf(Date).isRequired
-    })),
+    events: PropTypes.arrayOf(PropTypes.instanceOf(Event)),
 };

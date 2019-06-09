@@ -10,14 +10,8 @@ export class DayLines extends React.PureComponent {
         for (let i = 0; i < this.props.numDays; i++) {
             ret.push((
                 <div key={i + "day-line"} className="day-line"
-                     onDragOver={(e) => {
-                         e.preventDefault();
-                     }}
-                     // make methods in some other file and export them ad then put them in with EventCalendar too!
-                     onDrop={(e) => {
-                         console.log(e);
-                         console.log("dropped on a day")
-                     }}
+                     onDragOver={(e) => {e.preventDefault();}}
+                     onDrop={(e) => {this.props.onEventDrop(e, i);}}
                      onClick={() => console.log("clicked on a day")}>
                 </div>
             ))

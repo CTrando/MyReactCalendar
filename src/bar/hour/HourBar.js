@@ -32,7 +32,7 @@ export class HourBar extends React.PureComponent {
             curTime.setHours(i);
             const hourTime = format(curTime, "ha");
             ret.push((
-                <React.Fragment>
+                <React.Fragment key={hourTime}>
                     <div key={hourTime} style={this.getHourStyle(i - this.props.startHour + 2)}
                          className="hour-step-container">
                         <div>

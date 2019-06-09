@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import {HourBar} from "../../bar/hour/HourBar";
 import "./WeekCalendar.css";
 import {EventCalendar} from "../event/EventCalendar";
-import {HourLines} from "../../lines/hour/HourLines";
-import {DayLines} from "../../lines/day/DayLines";
 import {DayBar} from "../../bar/day/DayBar";
+import {Event} from "../event/Event";
 
 const DEFAULT_MIN_HOUR = 8;
 const DEFAULT_MAX_HOUR = 20;
@@ -58,38 +57,19 @@ export class WeekCalendar extends React.PureComponent {
                 <HourBar startHour={this.getMinHour()} endHour={this.getMaxHour()}/>
 
                 <EventCalendar startHour={this.getMinHour()}
+                               onEventDrop={this.props.onEventDrop}
                                endHour={this.getMaxHour()}
                                numDays={this.state.numDays}
                                events={this.props.events}/>
             </div>
         )
-        /*
-        return (
-            <div className="week-calendar-container">
-                <DayBar  numDays={this.state.numDays}/>
-                <div className="week-calendar">
-                    <HourBar startHour={this.getMinHour()} endHour={this.getMaxHour()}/>
-                    <HourLines startHour={this.getMinHour()} endHour={this.getMaxHour()}/>
-
-                    <div style={{position: "relative"}}>
-                        <DayLines numDays={this.state.numDays}/>
-                        <EventCalendar startHour={this.getMinHour()}
-                                       endHour={this.getMaxHour()}
-                                       numDays={this.state.numDays}
-                                       events={this.props.events}/>
-                    </div>
-                </div>
-            </div>
-        )*/
     }
 }
 
 WeekCalendar.propTypes = {
     workWeek: PropTypes.bool.isRequired,
-    events: PropTypes.arrayOf(PropTypes.shape({
-        start: PropTypes.instanceOf(Date).isRequired,
-        end: PropTypes.instanceOf(Date).isRequired
-    }))
+    events: PropTypes.arrayOf(PropTypes.instanceOf(Event)),
+    onEventDrop: PropTypes.func
 };
 
 WeekCalendar.defaultProps = {
