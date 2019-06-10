@@ -1,5 +1,5 @@
 import React from 'react';
-import {addHours, setHours, setMinutes, setSeconds, setMilliseconds, setDay} from 'date-fns';
+import {min, addSeconds, differenceInSeconds, setHours, setMinutes, setSeconds, setMilliseconds, setDay} from 'date-fns';
 import {Event} from "./calendar/event/Event";
 import {WeekCalendar} from "./calendar/week/WeekCalendar";
 
@@ -43,17 +43,15 @@ export class Demo extends React.PureComponent {
         }
     }
 
-    onEventDrop(droppedEventId, day, hour) {
-        console.log(droppedEventId);
-        console.log(`Day is ${day}`);
-        console.log(`Hour is ${hour}`);
-
+    onEventDrop(droppedEventId, timeEventDroppedOn) {
         const droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
+        const secondsDiff = differenceInSeconds(droppedEvent.end, droppedEvent.start);
 
-        const hourDiff = hour - droppedEvent.start.getHours();
+        droppedEvent.start = timeEventDroppedOn;
+        droppedEvent.end = addSeconds(timeEventDroppedOn, secondsDiff);
 
-        droppedEvent.start = setDay(addHours(droppedEvent.start, hourDiff), day);
-        droppedEvent.end = setDay(addHours(droppedEvent.end, hourDiff), day);
+        if(droppedEvent.start.getDay() !== droppedEvent.end.getDay())
+            return;
 
         const newEvent = new Event(droppedEvent);
 

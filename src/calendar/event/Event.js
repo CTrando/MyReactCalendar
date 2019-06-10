@@ -33,19 +33,26 @@ export class Event {
     }
 
     getEventStyle(calendarStart) {
+        let backgroundColor = "grey";
+
         const referenceStart = startOfWeek(this.start, {weekStartsOn: 1});
-        const eventCol = differenceInCalendarDays(this.start, referenceStart) + 1;
+        const eventColStart = differenceInCalendarDays(this.start, referenceStart) + 1;
+        const eventColEnd = differenceInCalendarDays(this.end, referenceStart) + 1;
 
         const startTime5MinuteIntervals = Math.floor((this.start.getHours() - calendarStart) * 12) + Math.floor(this.start.getMinutes() / 5) + 1;
         const endTime5MinuteIntervals = Math.floor((this.end.getHours() - calendarStart) * 12) + Math.floor(this.end.getMinutes() / 5) + 1;
 
+        if(eventColStart !== eventColEnd)
+           backgroundColor = "red" ;
+
+
         return {
             position: "relative",
-            backgroundColor: "grey",
+            backgroundColor: backgroundColor,
             gridRow: `${startTime5MinuteIntervals}/${endTime5MinuteIntervals}`,
 
             // only support events that start and end on the same day, so can just use one
-            gridColumn: `${eventCol}/${eventCol}`,
+            gridColumn: `${eventColStart}/${eventColEnd}`,
             border: "1px solid white",
             zIndex: 1,
         }

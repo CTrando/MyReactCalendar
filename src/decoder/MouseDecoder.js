@@ -1,3 +1,5 @@
+import {setHours, setMinutes, setSeconds, setDay} from 'date-fns';
+
 /**
  * Returns the hour and day of where the click occurred
  */
@@ -13,12 +15,11 @@ export function decodeEvent(evt, numDays, startHour, endHour) {
 
     const numHours = endHour - startHour;
 
-    const gridRow = Math.floor(y / boundingBox.height * numHours);
+    const minuteIntervals = Math.floor(y / boundingBox.height * numHours * 12);
+    const hours = Math.floor(minuteIntervals / 12);
+    const minutes = 5 * (minuteIntervals % 12);
+
     const gridCol = Math.floor(x / boundingBox.width * numDays);
 
-    // TODO convert this to an actual date object
-    return {
-        day: gridCol + 1,
-        hour: gridRow + startHour
-    }
+    return setHours(setMinutes(setSeconds(setDay(new Date(), gridCol + 1), 0), minutes), hours + startHour);
 }

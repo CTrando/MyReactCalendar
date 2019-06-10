@@ -25,12 +25,11 @@ export class EventCalendar extends React.PureComponent {
         e.preventDefault();
     }
 
-    onEventDrop(evt, dayDropped) {
-        console.log(`Event with key ${this.state.draggedEvent} was dropped on day ${dayDropped}`);
-        const {hour, day} = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
+    onEventDrop(evt) {
+        const timeEventDroppedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
         if(this.props.onEventDrop)
-            this.props.onEventDrop(this.state.draggedEvent, day, hour);
+            this.props.onEventDrop(this.state.draggedEvent, timeEventDroppedOn);
     }
 
     getEventCalendarStyle() {
@@ -56,7 +55,7 @@ export class EventCalendar extends React.PureComponent {
                         key={evt.start.toString() + evt.end.toString()}
                         onDrag={(e) => this.onEventDrag(e, evt.id)}
                         // have to normalize getDay() because it thinks start of week is on sunday
-                        onDrop={(e) => this.onEventDrop(e, evt.start.getDay() - 1)}
+                        onDrop={this.onEventDrop.bind(this)}
                         onDragOver={this.allowDrag}
                         style={{height: "100%"}}>
 
