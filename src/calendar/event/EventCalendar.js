@@ -5,7 +5,7 @@ import {Event} from './Event';
 import "./EventCalendar.css";
 import {DayLines} from "../../lines/day/DayLines";
 import {HourLines} from "../../lines/hour/HourLines";
-import {decodeEvent} from "../../decoder/MouseDecoder";
+import {decodeEvent, decodeEventRespectElement} from "../../decoder/MouseDecoder";
 import 'react-resizable/css/styles.css';
 import {Resizable} from "../../resize/Resizable";
 
@@ -31,10 +31,10 @@ export class EventCalendar extends React.PureComponent {
     }
 
     onEventDrop(evt) {
-        const timeEventDroppedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
+        const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
         // we know it is a drag event event if the second part of conditional is not null (no typos here)
-        if (this.props.onEventDrop && this.state.draggedEvent)
+        if (this.props.onEventDrop && this.state.draggedEvent && timeEventDroppedOn)
             this.props.onEventDrop(this.state.draggedEvent, timeEventDroppedOn);
     }
 
@@ -43,7 +43,7 @@ export class EventCalendar extends React.PureComponent {
         this.setState({draggedEvent: key, dragType: RESIZE});
         const timeEventDroppedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
-        if(this.props.onEventResize)
+        if(timeEventDroppedOn && this.props.onEventResize)
             this.props.onEventResize(key, timeEventDroppedOn);
 
         evt.stopPropagation();
@@ -55,6 +55,13 @@ export class EventCalendar extends React.PureComponent {
         } else if(this.state.dragType === DRAG) {
             this.onEventDrop(evt);
         }
+    }
+
+    onDragStart(e) {
+        e.dataTransfer.setData('text', JSON.stringify({
+            mouseY: e.clientY,
+            id: e.target.id
+        }));
     }
 
     getEventCalendarStyle() {
@@ -77,11 +84,14 @@ export class EventCalendar extends React.PureComponent {
                 <div key={evt.id} style={style}>
                     <Resizable onResize={(e) => this.onEventResize(e, evt.id)}>
                         <div
+                            id={`${evt.id}-drag`}
                             draggable
                             key={evt.start.toString() + evt.end.toString()}
                             onDrag={(e) => this.onEventDrag(e, evt.id)}
                             // have to normalize getDay() because it thinks start of week is on sunday
                             onDrop={this.onDrop.bind(this)}
+                            // setting data onto dataTransfer so that can recognize what div was dragged on drop
+                            onDragStart={this.onDragStart.bind(this)}
                             onDragOver={this.allowDrag}
                             style={{height: "100%"}}>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import {
     max,
     addSeconds,
+    addMinutes,
     differenceInSeconds,
     setHours,
     setMinutes,
@@ -56,13 +57,14 @@ export class Demo extends React.PureComponent {
         const droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
         const secondsDiff = differenceInSeconds(droppedEvent.end, droppedEvent.start);
 
-        droppedEvent.start = timeEventDroppedOn;
-        droppedEvent.end = addSeconds(timeEventDroppedOn, secondsDiff);
+        const newEvent = new Event(droppedEvent);
 
-        if (droppedEvent.start.getDay() !== droppedEvent.end.getDay())
+        newEvent.start = timeEventDroppedOn;
+        newEvent.end = addSeconds(timeEventDroppedOn, secondsDiff);
+
+        if (newEvent.start.getDay() !== newEvent.end.getDay())
             return;
 
-        const newEvent = new Event(droppedEvent);
 
         const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
         this.setState({
@@ -72,14 +74,17 @@ export class Demo extends React.PureComponent {
 
     onEventResize(droppedEventId, timeEventDroppedOn) {
         const droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
-        const prevStart = droppedEvent.start;
-
-        droppedEvent.end = max(prevStart, timeEventDroppedOn);
-
-        if (droppedEvent.start.getDay() !== droppedEvent.end.getDay())
-            return;
+        const minVal = addMinutes(droppedEvent.start, 30);
 
         const newEvent = new Event(droppedEvent);
+
+        if (newEvent.start.getDay() !== newEvent.end.getDay())
+            return;
+
+        if (newEvent.start.getDay() !== timeEventDroppedOn.getDay())
+            return;
+
+        newEvent.end = max(minVal, timeEventDroppedOn);
 
         const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
         this.setState({
@@ -90,7 +95,8 @@ export class Demo extends React.PureComponent {
 
     render() {
         return (
-            <WeekCalendar events={this.state.events} onEventDrop={this.onEventDrop.bind(this)} onEventResize={this.onEventResize.bind(this)}/>
+            <WeekCalendar events={this.state.events} onEventDrop={this.onEventDrop.bind(this)}
+                          onEventResize={this.onEventResize.bind(this)}/>
         )
     }
 }

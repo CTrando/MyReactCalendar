@@ -27,7 +27,7 @@ export class WeekCalendar extends React.PureComponent {
             return DEFAULT_MIN_HOUR;
         let startHours = this.props.events.map(e => e.start.getHours());
         // subtracting one to have some more space
-        return Math.min(...startHours) - 1;
+        return Math.max(0, Math.min(...startHours) - 1);
     }
 
     getMaxHour() {
@@ -36,7 +36,7 @@ export class WeekCalendar extends React.PureComponent {
 
         let endHours = this.props.events.map(e => e.end.getHours());
         // adding one to have some more space
-        return Math.max(...endHours) + 1;
+        return Math.min(Math.max(...endHours) + 1, 24);
     }
 
     getWeekCalendarStyle() {

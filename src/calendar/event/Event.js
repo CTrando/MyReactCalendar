@@ -55,6 +55,7 @@ export class Event {
             gridColumn: `${eventColStart}/${eventColEnd}`,
             border: "1px solid white",
             zIndex: 1,
+            height: "100%"
         }
     }
 }

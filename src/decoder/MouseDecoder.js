@@ -1,17 +1,24 @@
 import {setHours, setMinutes, setSeconds, setDay} from 'date-fns';
 
+export function decodeEvent(evt, numDays, startHour, endHour) {
+    return decodeEvent0(evt.clientX, evt.clientY, numDays, startHour, endHour);
+}
+
 /**
  * Returns the hour and day of where the click occurred
  */
-export function decodeEvent(evt, numDays, startHour, endHour) {
+function decodeEvent0(clientX, clientY, numDays, startHour, endHour) {
     const calendar = document.getElementById("event-calendar");
     const boundingBox = calendar.getBoundingClientRect();
 
     // x is px for days
-    const x = evt.clientX - boundingBox.left; //x position within the element.
+    const x = clientX - boundingBox.left; //x position within the element.
 
     // y is px for hours
-    const y = evt.clientY - boundingBox.top;
+    const y = clientY - boundingBox.top;
+
+    if(x < 0 || y < 0)
+        return undefined;
 
     const numHours = endHour - startHour;
 
@@ -22,4 +29,16 @@ export function decodeEvent(evt, numDays, startHour, endHour) {
     const gridCol = Math.floor(x / boundingBox.width * numDays);
 
     return setHours(setMinutes(setSeconds(setDay(new Date(), gridCol + 1), 0), minutes), hours + startHour);
+}
+
+/**
+ * Returns hour and day relative to top of target element
+ */
+
+export function decodeEventRespectElement(evt, numDays, startHour, endHour) {
+    const data = JSON.parse(evt.dataTransfer.getData('text'));
+    const droppedEl = document.getElementById(data.id);
+    let newY = evt.clientY + droppedEl.getBoundingClientRect().top - data.mouseY;
+
+    return decodeEvent0(evt.clientX, newY, numDays, startHour, endHour);
 }
