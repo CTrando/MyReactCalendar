@@ -6,30 +6,55 @@ import "./EventCalendar.css";
 import {DayLines} from "../../lines/day/DayLines";
 import {HourLines} from "../../lines/hour/HourLines";
 import {decodeEvent} from "../../decoder/MouseDecoder";
+import 'react-resizable/css/styles.css';
+import {Resizable} from "../../resize/Resizable";
+
+const RESIZE = "resize";
+const DRAG = "drag";
 
 export class EventCalendar extends React.PureComponent {
 
     constructor(props) {
         super(props);
         this.state = {
-            draggedEvent: null
+            draggedEvent: null,
+            dragType: null
         }
-    }
-
-    onEventDrag(evt, key) {
-        console.log(key);
-        this.setState({draggedEvent: key});
     }
 
     allowDrag(e) {
         e.preventDefault();
     }
 
+    onEventDrag(evt, key) {
+        this.setState({draggedEvent: key, dragType: DRAG});
+    }
+
     onEventDrop(evt) {
         const timeEventDroppedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
-        if(this.props.onEventDrop)
+        // we know it is a drag event event if the second part of conditional is not null (no typos here)
+        if (this.props.onEventDrop && this.state.draggedEvent)
             this.props.onEventDrop(this.state.draggedEvent, timeEventDroppedOn);
+    }
+
+    onEventResize(evt, key) {
+        // should add a delay here so this doesn't get called so often
+        this.setState({draggedEvent: key, dragType: RESIZE});
+        const timeEventDroppedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
+
+        if(this.props.onEventResize)
+            this.props.onEventResize(key, timeEventDroppedOn);
+
+        evt.stopPropagation();
+    }
+
+    onDrop(evt) {
+        if(this.state.dragType === RESIZE) {
+
+        } else if(this.state.dragType === DRAG) {
+            this.onEventDrop(evt);
+        }
     }
 
     getEventCalendarStyle() {
@@ -50,17 +75,19 @@ export class EventCalendar extends React.PureComponent {
             const style = evt.getEventStyle(this.props.startHour);
             return (
                 <div key={evt.id} style={style}>
-                    <div
-                        draggable
-                        key={evt.start.toString() + evt.end.toString()}
-                        onDrag={(e) => this.onEventDrag(e, evt.id)}
-                        // have to normalize getDay() because it thinks start of week is on sunday
-                        onDrop={this.onEventDrop.bind(this)}
-                        onDragOver={this.allowDrag}
-                        style={{height: "100%"}}>
+                    <Resizable onResize={(e) => this.onEventResize(e, evt.id)}>
+                        <div
+                            draggable
+                            key={evt.start.toString() + evt.end.toString()}
+                            onDrag={(e) => this.onEventDrag(e, evt.id)}
+                            // have to normalize getDay() because it thinks start of week is on sunday
+                            onDrop={this.onDrop.bind(this)}
+                            onDragOver={this.allowDrag}
+                            style={{height: "100%"}}>
 
-                        {evt.getView(this.props.startHour)}
-                    </div>
+                            {evt.getView(this.props.startHour)}
+                        </div>
+                    </Resizable>
                 </div>
             );
         });
@@ -78,7 +105,7 @@ export class EventCalendar extends React.PureComponent {
         return (
             <div style={this.getEventCalendarWrapperStyle()}>
                 <HourLines startHour={this.props.startHour} endHour={this.props.endHour}/>
-                <DayLines numDays={this.props.numDays} onEventDrop={this.onEventDrop.bind(this)}/>
+                <DayLines numDays={this.props.numDays} onEventDrop={this.onDrop.bind(this)}/>
                 <div id="event-calendar" style={this.getEventCalendarStyle()} className="event-calendar">
                     {this.getEventDivs()}
                 </div>
@@ -89,6 +116,7 @@ export class EventCalendar extends React.PureComponent {
 
 EventCalendar.propTypes = {
     onEventDrop: PropTypes.func,
+    onEventResize: PropTypes.func,
     startHour: PropTypes.number.isRequired,
     endHour: PropTypes.number.isRequired,
     numDays: PropTypes.number.isRequired,

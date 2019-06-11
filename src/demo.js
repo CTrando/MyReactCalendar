@@ -1,5 +1,14 @@
 import React from 'react';
-import {min, addSeconds, differenceInSeconds, setHours, setMinutes, setSeconds, setMilliseconds, setDay} from 'date-fns';
+import {
+    max,
+    addSeconds,
+    differenceInSeconds,
+    setHours,
+    setMinutes,
+    setSeconds,
+    setMilliseconds,
+    setDay
+} from 'date-fns';
 import {Event} from "./calendar/event/Event";
 import {WeekCalendar} from "./calendar/week/WeekCalendar";
 
@@ -50,7 +59,7 @@ export class Demo extends React.PureComponent {
         droppedEvent.start = timeEventDroppedOn;
         droppedEvent.end = addSeconds(timeEventDroppedOn, secondsDiff);
 
-        if(droppedEvent.start.getDay() !== droppedEvent.end.getDay())
+        if (droppedEvent.start.getDay() !== droppedEvent.end.getDay())
             return;
 
         const newEvent = new Event(droppedEvent);
@@ -61,9 +70,27 @@ export class Demo extends React.PureComponent {
         });
     }
 
+    onEventResize(droppedEventId, timeEventDroppedOn) {
+        const droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
+        const prevStart = droppedEvent.start;
+
+        droppedEvent.end = max(prevStart, timeEventDroppedOn);
+
+        if (droppedEvent.start.getDay() !== droppedEvent.end.getDay())
+            return;
+
+        const newEvent = new Event(droppedEvent);
+
+        const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
+        this.setState({
+            events: [...eventsWithoutDroppedEvent, newEvent]
+        });
+    }
+
+
     render() {
         return (
-            <WeekCalendar events={this.state.events} onEventDrop={this.onEventDrop.bind(this)}/>
+            <WeekCalendar events={this.state.events} onEventDrop={this.onEventDrop.bind(this)} onEventResize={this.onEventResize.bind(this)}/>
         )
     }
 }

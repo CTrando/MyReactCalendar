@@ -1,0 +1,11 @@
+
+.resize-context {
+    position: relative;
+    height: 100%;
+}
+
+.resize-widget {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}

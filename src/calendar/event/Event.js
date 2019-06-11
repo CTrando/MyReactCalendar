@@ -26,7 +26,7 @@ export class Event {
      */
     getView(calendarStart) {
         return (
-            <div onClick={(e) => console.log("string from event on click")} style={{height: "100%"}}>
+            <div onClick={(e) => console.log("string from event on click")} style={{height: "100%", backgroundColor: "grey"}}>
                 how are you
             </div>
         )
