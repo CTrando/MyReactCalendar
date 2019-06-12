@@ -38,13 +38,13 @@ export class EventCalendar extends React.PureComponent {
             this.props.onEventDrop(this.state.draggedEvent, timeEventDroppedOn);
     }
 
-    onEventResize(evt, key) {
+    onEventResize(evt, key, typeResize) {
         // should add a delay here so this doesn't get called so often
         this.setState({draggedEvent: key, dragType: RESIZE});
         const timeEventDroppedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
         if(timeEventDroppedOn && this.props.onEventResize)
-            this.props.onEventResize(key, timeEventDroppedOn);
+            this.props.onEventResize(key, timeEventDroppedOn, typeResize);
 
         evt.stopPropagation();
     }
@@ -82,7 +82,7 @@ export class EventCalendar extends React.PureComponent {
             const style = evt.getEventStyle(this.props.startHour);
             return (
                 <div key={evt.id} style={style}>
-                    <Resizable onResize={(e) => this.onEventResize(e, evt.id)}>
+                    <Resizable onResize={(e, position) => this.onEventResize(e, evt.id, position)}>
                         <div
                             id={`${evt.id}-drag`}
                             draggable

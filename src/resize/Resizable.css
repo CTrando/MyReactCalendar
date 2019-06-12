@@ -6,15 +6,22 @@
 
 .resize-widget {
     position: absolute;
-    bottom: 0;
-    right: 0;
-
     width: 30%;
     background-color: transparent;
     border: none;
 }
 
+.resize-widget-start {
+    bottom: 0;
+    right: 0;
+}
+
+.resize-widget-end {
+    top: 0;
+    left: 0;
+}
+
 
 #search-icon {
-    fill:black;
+    fill: black;
 }

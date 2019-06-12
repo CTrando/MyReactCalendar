@@ -12,6 +12,7 @@ import {
 } from 'date-fns';
 import {Event} from "./calendar/event/Event";
 import {WeekCalendar} from "./calendar/week/WeekCalendar";
+import {END, START} from "./resize/Resizable";
 
 export class Demo extends React.PureComponent {
 
@@ -72,7 +73,7 @@ export class Demo extends React.PureComponent {
         });
     }
 
-    onEventResize(droppedEventId, timeEventDroppedOn) {
+    onEventResize(droppedEventId, timeEventResizedTo, typeResize) {
         const droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
         const minVal = addMinutes(droppedEvent.start, 30);
 
@@ -81,10 +82,15 @@ export class Demo extends React.PureComponent {
         if (newEvent.start.getDay() !== newEvent.end.getDay())
             return;
 
-        if (newEvent.start.getDay() !== timeEventDroppedOn.getDay())
+        if (newEvent.start.getDay() !== timeEventResizedTo.getDay())
             return;
 
-        newEvent.end = max(minVal, timeEventDroppedOn);
+        if(typeResize === END) {
+            newEvent.end = max(minVal, timeEventResizedTo);
+        } else if (typeResize === START) {
+            newEvent.start = timeEventResizedTo;
+        }
+
 
         const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
         this.setState({
