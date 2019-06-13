@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Event} from './Event';
 
 import "./EventCalendar.css";
 import {DayLines} from "../../lines/day/DayLines";
 import {HourLines} from "../../lines/hour/HourLines";
 import {decodeEvent, decodeEventRespectElement} from "../../decoder/MouseDecoder";
+import {differenceInCalendarDays, startOfWeek} from "date-fns";
 import {Resizable} from "../../resize/Resizable";
 
 const RESIZE = "resize";
@@ -92,17 +92,44 @@ export class EventCalendar extends React.PureComponent {
         }
     }
 
+    getEventStyle(calendarStart, eventStart, eventEnd) {
+        let backgroundColor = "grey";
+
+        const referenceStart = startOfWeek(eventStart, {weekStartsOn: 1});
+        const eventColStart = differenceInCalendarDays(eventStart, referenceStart) + 1;
+        const eventColEnd = differenceInCalendarDays(eventEnd, referenceStart) + 1;
+
+        const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - calendarStart) * 12) + Math.floor(eventStart.getMinutes() / 5) + 1;
+        const endTime5MinuteIntervals = Math.floor((eventEnd.getHours() - calendarStart) * 12) + Math.floor(eventEnd.getMinutes() / 5) + 1;
+
+        if(eventColStart !== eventColEnd)
+           backgroundColor = "red" ;
+
+
+        return {
+            position: "relative",
+            backgroundColor: backgroundColor,
+            gridRow: `${startTime5MinuteIntervals}/${endTime5MinuteIntervals}`,
+
+            // only support events that start and end on the same day, so can just use one
+            gridColumn: `${eventColStart}/${eventColEnd}`,
+            border: "1px solid white",
+            zIndex: 1,
+            height: "100%"
+        }
+    }
+
     getEventDivs() {
         return this.props.events.map((evt) => {
-            const style = evt.getEventStyle(this.props.startHour);
+            const style = this.getEventStyle(this.props.startHour, evt.props.start, evt.props.end);
             return (
-                <div key={evt.id} style={style}>
-                    <Resizable onResize={(e, position) => this.onEventResize(e, evt.id, position)}>
+                <div key={evt.props.id} style={style}>
+                    <Resizable onResize={(e, position) => this.onEventResize(e, evt.props.id, position)}>
                         <div
-                            id={`${evt.id}-drag`}
+                            id={`${evt.props.id}-drag`}
                             draggable
-                            key={evt.start.toString() + evt.end.toString()}
-                            onDrag={(e) => this.onEventDrag(e, evt.id)}
+                            key={evt.props.start.toString() + evt.props.end.toString()}
+                            onDrag={(e) => this.onEventDrag(e, evt.props.id)}
                             // have to normalize getDay() because it thinks start of week is on sunday
                             onDrop={this.onDrop.bind(this)}
                             // setting data onto dataTransfer so that can recognize what div was dragged on drop
@@ -110,7 +137,7 @@ export class EventCalendar extends React.PureComponent {
                             onDragOver={this.allowDrag}
                             style={{height: "100%"}}>
 
-                            {evt.getView(this.props.startHour)}
+                            {evt}
                         </div>
                     </Resizable>
                 </div>
@@ -146,5 +173,5 @@ EventCalendar.propTypes = {
     startHour: PropTypes.number.isRequired,
     endHour: PropTypes.number.isRequired,
     numDays: PropTypes.number.isRequired,
-    events: PropTypes.arrayOf(PropTypes.instanceOf(Event)),
+    events: PropTypes.arrayOf(PropTypes.instanceOf(Object)),
 };

@@ -4,7 +4,6 @@ import {HourBar} from "../../bar/hour/HourBar";
 import "./WeekCalendar.css";
 import {EventCalendar} from "../event/EventCalendar";
 import {DayBar} from "../../bar/day/DayBar";
-import {Event} from "../event/Event";
 
 const DEFAULT_MIN_HOUR = 8;
 const DEFAULT_MAX_HOUR = 20;
@@ -25,7 +24,7 @@ export class WeekCalendar extends React.PureComponent {
     getMinHour() {
         if (!this.props.events)
             return DEFAULT_MIN_HOUR;
-        let startHours = this.props.events.map(e => e.start.getHours());
+        let startHours = this.props.events.map(e => e.props.start.getHours());
         // subtracting one to have some more space
         return Math.max(0, Math.min(...startHours) - 1);
     }
@@ -34,7 +33,7 @@ export class WeekCalendar extends React.PureComponent {
         if (!this.props.events)
             return DEFAULT_MAX_HOUR;
 
-        let endHours = this.props.events.map(e => e.end.getHours());
+        let endHours = this.props.events.map(e => e.props.end.getHours());
         // adding one to have some more space
         return Math.min(Math.max(...endHours) + 1, 24);
     }
@@ -70,7 +69,7 @@ export class WeekCalendar extends React.PureComponent {
 
 WeekCalendar.propTypes = {
     workWeek: PropTypes.bool.isRequired,
-    events: PropTypes.arrayOf(PropTypes.instanceOf(Event)),
+    events: PropTypes.arrayOf(PropTypes.instanceOf(Object)),
     onCalendarClick: PropTypes.func,
     onEventDrop: PropTypes.func,
     onEventResize: PropTypes.func
