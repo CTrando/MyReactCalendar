@@ -1,6 +1,7 @@
 import React from 'react';
 import {
     max,
+    addHours,
     addSeconds,
     addMinutes,
     differenceInSeconds,
@@ -20,6 +21,7 @@ export class Demo extends React.PureComponent {
         super(props);
 
         this.state = {
+            numCreated : 0,
             events: [
                 new Event({
                     id: "event1",
@@ -98,10 +100,23 @@ export class Demo extends React.PureComponent {
         });
     }
 
+    onCalendarClick(timeClickedOn) {
+        const start = timeClickedOn;
+        const end = addHours(timeClickedOn, 1);
+
+        if(start.getDay() !== end.getDay())
+            return;
+
+        const newEvent = new Event({id: "created-event" + this.state.numCreated, start: start, end: end});
+        this.setState({numCreated: this.state.numCreated + 1, events: [...this.state.events, newEvent]});
+    }
+
 
     render() {
         return (
-            <WeekCalendar events={this.state.events} onEventDrop={this.onEventDrop.bind(this)}
+            <WeekCalendar events={this.state.events}
+                          onCalendarClick={this.onCalendarClick.bind(this)}
+                          onEventDrop={this.onEventDrop.bind(this)}
                           onEventResize={this.onEventResize.bind(this)}/>
         )
     }

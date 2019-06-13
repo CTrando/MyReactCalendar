@@ -9,11 +9,7 @@ export class DayLines extends React.PureComponent {
         const ret = [];
         for (let i = 0; i < this.props.numDays; i++) {
             ret.push((
-                <div key={i + "day-line"} className="day-line"
-                     onDragOver={(e) => {e.preventDefault();}}
-                     onDrop={(e) => {this.props.onEventDrop(e, i);}}
-                     onClick={() => console.log("clicked on a day")}>
-                </div>
+                <div key={i + "day-line"} className="day-line"/>
             ))
         }
         return ret;
@@ -30,7 +26,11 @@ export class DayLines extends React.PureComponent {
 
     render() {
         return (
-            <div className="day-lines" style={this.getDayStyle()}>
+            <div className="day-lines"
+                 style={this.getDayStyle()}
+                 onDragOver={(e) => e.preventDefault()}
+                 onClick={this.props.onClick}
+                 onDrop={this.props.onEventDrop}>
                 {this.getDayLines()}
             </div>
         );
@@ -38,5 +38,7 @@ export class DayLines extends React.PureComponent {
 }
 
 DayLines.propTypes = {
+    onEventDrop: PropTypes.func.isRequired,
+    onClick: PropTypes.func.isRequired,
     numDays: PropTypes.number.isRequired
 };

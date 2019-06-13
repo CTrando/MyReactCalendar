@@ -2,7 +2,11 @@ import React from 'react';
 import {startOfWeek, differenceInCalendarDays} from "date-fns";
 
 export class Event {
-
+    /**
+     * @param id needs an id MUST BE A NOT FALSEY STRING
+     * @param start needs a start time
+     * @param end needs an end time
+     */
     constructor({id, start, end}) {
         this.id = id;
         this.start = start;

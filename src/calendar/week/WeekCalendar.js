@@ -59,6 +59,7 @@ export class WeekCalendar extends React.PureComponent {
                 <EventCalendar startHour={this.getMinHour()}
                                onEventDrop={this.props.onEventDrop}
                                onEventResize={this.props.onEventResize}
+                               onClick={this.props.onCalendarClick}
                                endHour={this.getMaxHour()}
                                numDays={this.state.numDays}
                                events={this.props.events}/>
@@ -70,6 +71,7 @@ export class WeekCalendar extends React.PureComponent {
 WeekCalendar.propTypes = {
     workWeek: PropTypes.bool.isRequired,
     events: PropTypes.arrayOf(PropTypes.instanceOf(Event)),
+    onCalendarClick: PropTypes.func,
     onEventDrop: PropTypes.func,
     onEventResize: PropTypes.func
 };

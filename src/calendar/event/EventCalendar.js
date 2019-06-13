@@ -6,7 +6,6 @@ import "./EventCalendar.css";
 import {DayLines} from "../../lines/day/DayLines";
 import {HourLines} from "../../lines/hour/HourLines";
 import {decodeEvent, decodeEventRespectElement} from "../../decoder/MouseDecoder";
-import 'react-resizable/css/styles.css';
 import {Resizable} from "../../resize/Resizable";
 
 const RESIZE = "resize";
@@ -22,10 +21,26 @@ export class EventCalendar extends React.PureComponent {
         }
     }
 
+    /**
+     * Called when a user clicks anywhere on the event calendar
+     * @param evt the click event
+     */
+    onClick(evt) {
+        const timeClickedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
+
+        if(this.props.onClick)
+            this.props.onClick(timeClickedOn);
+    }
+
     allowDrag(e) {
         e.preventDefault();
     }
 
+    /**
+     * Called when a user starts dragging an event on the event calendar anywhere
+     * @param evt the drag event
+     * @param key the unique key for the given event
+     */
     onEventDrag(evt, key) {
         this.setState({draggedEvent: key, dragType: DRAG});
     }
@@ -115,7 +130,7 @@ export class EventCalendar extends React.PureComponent {
         return (
             <div style={this.getEventCalendarWrapperStyle()}>
                 <HourLines startHour={this.props.startHour} endHour={this.props.endHour}/>
-                <DayLines numDays={this.props.numDays} onEventDrop={this.onDrop.bind(this)}/>
+                <DayLines numDays={this.props.numDays} onEventDrop={this.onDrop.bind(this)} onClick={this.onClick.bind(this)}/>
                 <div id="event-calendar" style={this.getEventCalendarStyle()} className="event-calendar">
                     {this.getEventDivs()}
                 </div>
@@ -127,6 +142,7 @@ export class EventCalendar extends React.PureComponent {
 EventCalendar.propTypes = {
     onEventDrop: PropTypes.func,
     onEventResize: PropTypes.func,
+    onClick: PropTypes.func,
     startHour: PropTypes.number.isRequired,
     endHour: PropTypes.number.isRequired,
     numDays: PropTypes.number.isRequired,

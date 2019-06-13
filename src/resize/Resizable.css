@@ -6,17 +6,20 @@
 
 .resize-widget {
     position: absolute;
-    width: 30%;
+    width: 100%;
+    height: 10px;
     background-color: transparent;
     border: none;
-}
 
-.resize-widget-start {
-    bottom: 0;
-    right: 0;
+    cursor: row-resize;
 }
 
 .resize-widget-end {
+    bottom: 0;
+    left: 0;
+}
+
+.resize-widget-start {
     top: 0;
     left: 0;
 }
