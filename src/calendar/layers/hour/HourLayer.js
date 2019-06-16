@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import "./HourLines.css"
+import "./HourLayer.css"
 
-export class HourLines extends React.PureComponent {
+export class HourLayer extends React.PureComponent {
 
     getHourLines() {
         const ret = [];
@@ -28,14 +28,14 @@ export class HourLines extends React.PureComponent {
 
     render() {
         return (
-            <div className="hour-lines" style={this.getHourLinesStyle()}>
+            <div className="hour-layer" style={this.getHourLinesStyle()}>
                 {this.getHourLines()}
             </div>
         );
     }
 }
 
-HourLines.propTypes = {
+HourLayer.propTypes = {
     startHour: PropTypes.number.isRequired,
     endHour: PropTypes.number.isRequired
 }

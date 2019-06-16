@@ -1,9 +1,9 @@
 import React from 'react';
-import "./DayLines.css";
+import "./DayLayer.css";
 import PropTypes from 'prop-types';
 
 
-export class DayLines extends React.PureComponent {
+export class DayLayer extends React.PureComponent {
 
     getDayLines() {
         const ret = [];
@@ -20,25 +20,18 @@ export class DayLines extends React.PureComponent {
             display: "grid",
             gridTemplateColumns: `repeat(${this.props.numDays}, 1fr)`,
             height: "100%",
-            zIndex: 1
         };
     }
 
     render() {
         return (
-            <div className="day-lines"
-                 style={this.getDayStyle()}
-                 onDragOver={(e) => e.preventDefault()}
-                 onDoubleClick={this.props.onClick}
-                 onDrop={this.props.onEventDrop}>
+            <div className="day-layer" style={this.getDayStyle()}>
                 {this.getDayLines()}
             </div>
         );
     }
 }
 
-DayLines.propTypes = {
-    onEventDrop: PropTypes.func.isRequired,
-    onClick: PropTypes.func.isRequired,
+DayLayer.propTypes = {
     numDays: PropTypes.number.isRequired
 };

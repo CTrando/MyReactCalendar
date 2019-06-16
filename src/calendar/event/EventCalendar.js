@@ -2,11 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import "./EventCalendar.css";
-import {DayLines} from "../../lines/day/DayLines";
-import {HourLines} from "../../lines/hour/HourLines";
+import {DayLayer} from "../layers/day/DayLayer";
+import {HourLayer} from "../layers/hour/HourLayer";
 import {decodeEvent, decodeEventRespectElement} from "../../decoder/MouseDecoder";
 import {differenceInCalendarDays, startOfWeek} from "date-fns";
 import {Resizable} from "../../resize/Resizable";
+import {InputLayer} from "../layers/input/InputLayer";
 
 const RESIZE = "resize";
 const DRAG = "drag";
@@ -25,11 +26,11 @@ export class EventCalendar extends React.PureComponent {
      * Called when a user clicks anywhere on the event calendar
      * @param evt the click event
      */
-    onClick(evt) {
+    onDoubleClick(evt) {
         const timeClickedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
-        if (this.props.onClick)
-            this.props.onClick(timeClickedOn);
+        if (this.props.onDoubleClick)
+            this.props.onDoubleClick(timeClickedOn);
     }
 
     allowDrag(e) {
@@ -46,6 +47,9 @@ export class EventCalendar extends React.PureComponent {
     }
 
     onEventDrop(evt) {
+        if(this.state.dragType !== DRAG)
+            return;
+
         const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
         // we know it is a drag event event if the second part of conditional is not null (no typos here)
@@ -62,14 +66,6 @@ export class EventCalendar extends React.PureComponent {
             this.props.onEventResize(key, timeEventDroppedOn, typeResize);
 
         evt.stopPropagation();
-    }
-
-    onDrop(evt) {
-        if (this.state.dragType === RESIZE) {
-
-        } else if (this.state.dragType === DRAG) {
-            this.onEventDrop(evt);
-        }
     }
 
     onDragStart(e) {
@@ -114,7 +110,7 @@ export class EventCalendar extends React.PureComponent {
             // only support events that start and end on the same day, so can just use one
             gridColumn: `${eventColStart}/${eventColEnd}`,
             border: "1px solid white",
-            zIndex: 1,
+            zIndex: 10,
             height: "100%"
         }
     }
@@ -132,7 +128,7 @@ export class EventCalendar extends React.PureComponent {
                             key={evt.props.start.toString() + evt.props.end.toString()}
                             onDrag={(e) => this.onEventDrag(e, evt.props.id)}
                             // have to normalize getDay() because it thinks start of week is on sunday
-                            onDrop={this.onDrop.bind(this)}
+                            onDrop={this.onEventDrop.bind(this)}
                             // setting data onto dataTransfer so that can recognize what div was dragged on drop
                             onDragStart={this.onDragStart.bind(this)}
                             onDragOver={this.allowDrag}
@@ -155,7 +151,6 @@ export class EventCalendar extends React.PureComponent {
     }
 
     render() {
-
         const eventDivsPerLayer = this.props.events.map((layer, index) => {
             return (
                 <div key={index} style={this.getEventCalendarStyle()} className="event-calendar">
@@ -166,9 +161,10 @@ export class EventCalendar extends React.PureComponent {
 
         return (
             <div id="event-calendar" style={this.getEventCalendarWrapperStyle()}>
-                <HourLines startHour={this.props.startHour} endHour={this.props.endHour}/>
-                <DayLines numDays={this.props.numDays} onEventDrop={this.onDrop.bind(this)}
-                          onClick={this.onClick.bind(this)}/>
+                <HourLayer startHour={this.props.startHour} endHour={this.props.endHour}/>
+                <DayLayer numDays={this.props.numDays} />
+                <InputLayer onDoubleClick={this.onDoubleClick.bind(this)} onDrop={this.onEventDrop.bind(this)}/>
+
                 {eventDivsPerLayer}
             </div>
         )
@@ -178,7 +174,7 @@ export class EventCalendar extends React.PureComponent {
 EventCalendar.propTypes = {
     onEventDrop: PropTypes.func,
     onEventResize: PropTypes.func,
-    onClick: PropTypes.func,
+    onDoubleClick: PropTypes.func,
     startHour: PropTypes.number.isRequired,
     endHour: PropTypes.number.isRequired,
     numDays: PropTypes.number.isRequired,
