@@ -24,7 +24,7 @@ export class WeekCalendar extends React.PureComponent {
     getMinHour() {
         if (!this.props.events)
             return DEFAULT_MIN_HOUR;
-        let startHours = this.props.events.map(e => e.props.start.getHours());
+        let startHours = [].concat(...this.props.events).map(e => e.props.start.getHours());
         // subtracting one to have some more space
         return Math.max(0, Math.min(...startHours) - 1);
     }
@@ -33,7 +33,7 @@ export class WeekCalendar extends React.PureComponent {
         if (!this.props.events)
             return DEFAULT_MAX_HOUR;
 
-        let endHours = this.props.events.map(e => e.props.end.getHours());
+        let endHours = [].concat(...this.props.events).map(e => e.props.end.getHours());
         // adding one to have some more space
         return Math.min(Math.max(...endHours) + 1, 24);
     }

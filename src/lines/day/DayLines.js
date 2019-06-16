@@ -29,7 +29,7 @@ export class DayLines extends React.PureComponent {
             <div className="day-lines"
                  style={this.getDayStyle()}
                  onDragOver={(e) => e.preventDefault()}
-                 onClick={this.props.onClick}
+                 onDoubleClick={this.props.onClick}
                  onDrop={this.props.onEventDrop}>
                 {this.getDayLines()}
             </div>

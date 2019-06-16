@@ -28,7 +28,7 @@ export class EventCalendar extends React.PureComponent {
     onClick(evt) {
         const timeClickedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
-        if(this.props.onClick)
+        if (this.props.onClick)
             this.props.onClick(timeClickedOn);
     }
 
@@ -58,16 +58,16 @@ export class EventCalendar extends React.PureComponent {
         this.setState({draggedEvent: key, dragType: RESIZE});
         const timeEventDroppedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
-        if(timeEventDroppedOn && this.props.onEventResize)
+        if (timeEventDroppedOn && this.props.onEventResize)
             this.props.onEventResize(key, timeEventDroppedOn, typeResize);
 
         evt.stopPropagation();
     }
 
     onDrop(evt) {
-        if(this.state.dragType === RESIZE) {
+        if (this.state.dragType === RESIZE) {
 
-        } else if(this.state.dragType === DRAG) {
+        } else if (this.state.dragType === DRAG) {
             this.onEventDrop(evt);
         }
     }
@@ -88,7 +88,7 @@ export class EventCalendar extends React.PureComponent {
 
         return {
             gridTemplateRows: `repeat(${diffIn5MinuteIntervals}, 1fr)`,
-            gridTemplateColumns: `repeat(${this.props.numDays}, 1fr)`
+            gridTemplateColumns: `repeat(${this.props.numDays}, minmax(20px, 1fr))`
         }
     }
 
@@ -102,8 +102,8 @@ export class EventCalendar extends React.PureComponent {
         const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - calendarStart) * 12) + Math.floor(eventStart.getMinutes() / 5) + 1;
         const endTime5MinuteIntervals = Math.floor((eventEnd.getHours() - calendarStart) * 12) + Math.floor(eventEnd.getMinutes() / 5) + 1;
 
-        if(eventColStart !== eventColEnd)
-           backgroundColor = "red" ;
+        if (eventColStart !== eventColEnd)
+            backgroundColor = "red";
 
 
         return {
@@ -119,9 +119,10 @@ export class EventCalendar extends React.PureComponent {
         }
     }
 
-    getEventDivs() {
-        return this.props.events.map((evt) => {
+    getEventDivs(layer) {
+        return layer.map((evt) => {
             const style = this.getEventStyle(this.props.startHour, evt.props.start, evt.props.end);
+            // TODO consider cloning all the functions into the evt component and then having the component rendering itself how it wants
             return (
                 <div key={evt.props.id} style={style}>
                     <Resizable onResize={(e, position) => this.onEventResize(e, evt.props.id, position)}>
@@ -154,13 +155,21 @@ export class EventCalendar extends React.PureComponent {
     }
 
     render() {
-        return (
-            <div style={this.getEventCalendarWrapperStyle()}>
-                <HourLines startHour={this.props.startHour} endHour={this.props.endHour}/>
-                <DayLines numDays={this.props.numDays} onEventDrop={this.onDrop.bind(this)} onClick={this.onClick.bind(this)}/>
-                <div id="event-calendar" style={this.getEventCalendarStyle()} className="event-calendar">
-                    {this.getEventDivs()}
+
+        const eventDivsPerLayer = this.props.events.map((layer, index) => {
+            return (
+                <div key={index} style={this.getEventCalendarStyle()} className="event-calendar">
+                    {this.getEventDivs(layer)}
                 </div>
+            )
+        });
+
+        return (
+            <div id="event-calendar" style={this.getEventCalendarWrapperStyle()}>
+                <HourLines startHour={this.props.startHour} endHour={this.props.endHour}/>
+                <DayLines numDays={this.props.numDays} onEventDrop={this.onDrop.bind(this)}
+                          onClick={this.onClick.bind(this)}/>
+                {eventDivsPerLayer}
             </div>
         )
     }

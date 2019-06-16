@@ -59,6 +59,18 @@ export class Demo extends React.PureComponent {
                     start: setDay(setMilliseconds(setSeconds(setMinutes(setHours(new Date(), 22), 0), 0), 0), 3),
                     end: setDay(setMilliseconds(setSeconds(setMinutes(setHours(new Date(), 23), 20), 0), 0), 3)
                 },
+            ],
+            preferences: [
+                {
+                    id: "preference1",
+                    start: setDay(setMilliseconds(setSeconds(setMinutes(setHours(new Date(), 13), 0), 0), 0), 2),
+                    end: setDay(setMilliseconds(setSeconds(setMinutes(setHours(new Date(), 15), 0), 0), 0), 2)
+                },
+                {
+                    id: "preference2",
+                    start: setDay(setMilliseconds(setSeconds(setMinutes(setHours(new Date(), 5), 30), 0), 0), 3),
+                    end: setDay(setMilliseconds(setSeconds(setMinutes(setHours(new Date(), 7), 50), 0), 0), 3)
+                },
             ]
         }
     }
@@ -120,8 +132,12 @@ export class Demo extends React.PureComponent {
 
     render() {
         const eventComponents = this.state.events.map(this.getEvent);
+        const preferenceComponents = this.state.preferences.map(this.getEvent);
+
+        const layers = [eventComponents, preferenceComponents];
+
         return (
-            <WeekCalendar events={eventComponents}
+            <WeekCalendar events={layers}
                           onCalendarClick={this.onCalendarClick.bind(this)}
                           onEventDrop={this.onEventDrop.bind(this)}
                           onEventResize={this.onEventResize.bind(this)}/>
