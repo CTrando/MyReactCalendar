@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {differenceInCalendarDays, startOfWeek} from "date-fns";
 import {Resizable} from "../../../resize/Resizable";
+import "./EventLayer.css";
 
 export class EventLayer extends React.PureComponent {
     onDragOver(e) {
@@ -84,7 +85,7 @@ export class EventLayer extends React.PureComponent {
 
     render() {
         return (
-            <div style={this.getEventCalendarStyle()} className="event-calendar">
+            <div style={this.getEventCalendarStyle()} className="event-layer">
                 {this.getEvents()}
             </div>
         )
