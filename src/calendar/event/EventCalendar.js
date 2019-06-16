@@ -5,9 +5,8 @@ import "./EventCalendar.css";
 import {DayLayer} from "../layers/day/DayLayer";
 import {HourLayer} from "../layers/hour/HourLayer";
 import {decodeEvent, decodeEventRespectElement} from "../../decoder/MouseDecoder";
-import {differenceInCalendarDays, startOfWeek} from "date-fns";
-import {Resizable} from "../../resize/Resizable";
 import {InputLayer} from "../layers/input/InputLayer";
+import {EventLayer} from "../layers/event/EventLayer";
 
 const RESIZE = "resize";
 const DRAG = "drag";
@@ -47,7 +46,7 @@ export class EventCalendar extends React.PureComponent {
     }
 
     onEventDrop(evt) {
-        if(this.state.dragType !== DRAG)
+        if (this.state.dragType !== DRAG)
             return;
 
         const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour);
@@ -68,80 +67,6 @@ export class EventCalendar extends React.PureComponent {
         evt.stopPropagation();
     }
 
-    onDragStart(e) {
-        e.dataTransfer.setData('text', JSON.stringify({
-            mouseY: e.clientY,
-            id: e.target.id
-        }));
-    }
-
-    getEventCalendarStyle() {
-        const earliestHour = this.props.startHour;
-        const latestHour = this.props.endHour;
-
-        const diff = latestHour - earliestHour;
-        const diffIn5MinuteIntervals = diff * 12;
-
-        return {
-            gridTemplateRows: `repeat(${diffIn5MinuteIntervals}, 1fr)`,
-            gridTemplateColumns: `repeat(${this.props.numDays}, minmax(20px, 1fr))`
-        }
-    }
-
-    getEventStyle(calendarStart, eventStart, eventEnd) {
-        let backgroundColor = "grey";
-
-        const referenceStart = startOfWeek(eventStart, {weekStartsOn: 1});
-        const eventColStart = differenceInCalendarDays(eventStart, referenceStart) + 1;
-        const eventColEnd = differenceInCalendarDays(eventEnd, referenceStart) + 1;
-
-        const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - calendarStart) * 12) + Math.floor(eventStart.getMinutes() / 5) + 1;
-        const endTime5MinuteIntervals = Math.floor((eventEnd.getHours() - calendarStart) * 12) + Math.floor(eventEnd.getMinutes() / 5) + 1;
-
-        if (eventColStart !== eventColEnd)
-            backgroundColor = "red";
-
-
-        return {
-            position: "relative",
-            backgroundColor: backgroundColor,
-            gridRow: `${startTime5MinuteIntervals}/${endTime5MinuteIntervals}`,
-
-            // only support events that start and end on the same day, so can just use one
-            gridColumn: `${eventColStart}/${eventColEnd}`,
-            border: "1px solid white",
-            zIndex: 10,
-            height: "100%"
-        }
-    }
-
-    getEventDivs(layer) {
-        return layer.map((evt) => {
-            const style = this.getEventStyle(this.props.startHour, evt.props.start, evt.props.end);
-            // TODO consider cloning all the functions into the evt component and then having the component rendering itself how it wants
-            return (
-                <div key={evt.props.id} style={style}>
-                    <Resizable onResize={(e, position) => this.onEventResize(e, evt.props.id, position)}>
-                        <div
-                            id={`${evt.props.id}-drag`}
-                            draggable
-                            key={evt.props.start.toString() + evt.props.end.toString()}
-                            onDrag={(e) => this.onEventDrag(e, evt.props.id)}
-                            // have to normalize getDay() because it thinks start of week is on sunday
-                            onDrop={this.onEventDrop.bind(this)}
-                            // setting data onto dataTransfer so that can recognize what div was dragged on drop
-                            onDragStart={this.onDragStart.bind(this)}
-                            onDragOver={this.allowDrag}
-                            style={{height: "100%"}}>
-
-                            {evt}
-                        </div>
-                    </Resizable>
-                </div>
-            );
-        });
-    }
-
     getEventCalendarWrapperStyle() {
         return {
             position: "relative",
@@ -151,21 +76,28 @@ export class EventCalendar extends React.PureComponent {
     }
 
     render() {
-        const eventDivsPerLayer = this.props.events.map((layer, index) => {
+        const eventLayers = this.props.events.map((layer, index) => {
             return (
-                <div key={index} style={this.getEventCalendarStyle()} className="event-calendar">
-                    {this.getEventDivs(layer)}
-                </div>
+                <EventLayer key={index}
+                            events={layer}
+                            startHour={this.props.startHour}
+                            endHour={this.props.endHour}
+                            numDays={this.props.numDays}
+
+                            onEventDrag={this.onEventDrag.bind(this)}
+                            onEventDrop={this.onEventDrop.bind(this)}
+                            onEventResize={this.onEventResize.bind(this)}
+                />
             )
         });
 
         return (
             <div id="event-calendar" style={this.getEventCalendarWrapperStyle()}>
                 <HourLayer startHour={this.props.startHour} endHour={this.props.endHour}/>
-                <DayLayer numDays={this.props.numDays} />
+                <DayLayer numDays={this.props.numDays}/>
                 <InputLayer onDoubleClick={this.onDoubleClick.bind(this)} onDrop={this.onEventDrop.bind(this)}/>
 
-                {eventDivsPerLayer}
+                {eventLayers}
             </div>
         )
     }
