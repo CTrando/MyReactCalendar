@@ -6,3 +6,11 @@
     height: 100%;
     display: grid;
 }
+
+
+.event-wrapper {
+    position: relative;
+    border: 1px solid white;
+    z-index: 10;
+    height: 100%;
+}

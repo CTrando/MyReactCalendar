@@ -11,9 +11,14 @@ import {
     setMilliseconds,
     setDay
 } from 'date-fns';
-import {Event} from "./calendar/event/Event";
-import {WeekCalendar} from "./calendar/week/WeekCalendar";
-import {END, START} from "./resize/Resizable";
+import {Event} from "../calendar/event/Event";
+import {WeekCalendar} from "../calendar/week/WeekCalendar";
+import {END, START} from "../resize/Resizable";
+
+import "./demo.css";
+
+const EVENT = "event";
+const PREFERENCE = "preference";
 
 export class Demo extends React.PureComponent {
 
@@ -75,8 +80,14 @@ export class Demo extends React.PureComponent {
         }
     }
 
-    onEventDrop(droppedEventId, timeEventDroppedOn) {
-        const droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
+    onEventDrop(droppedEventId, layerName, timeEventDroppedOn) {
+        let dropType = EVENT;
+        let droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
+        if (!droppedEvent) {
+            droppedEvent = this.state.preferences.filter((evt) => evt.id === droppedEventId)[0];
+            dropType = PREFERENCE;
+        }
+
         const secondsDiff = differenceInSeconds(droppedEvent.end, droppedEvent.start);
 
         const newEvent = Object.assign({}, droppedEvent);
@@ -88,14 +99,27 @@ export class Demo extends React.PureComponent {
             return;
 
 
-        const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
-        this.setState({
-            events: [...eventsWithoutDroppedEvent, newEvent]
-        });
+        if (dropType === EVENT) {
+            const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
+            this.setState({
+                events: [...eventsWithoutDroppedEvent, newEvent]
+            });
+        } else {
+            const preferencesWithoutDroppedEvent = this.state.preferences.filter((evt) => evt.id !== droppedEventId);
+            this.setState({
+                preferences: [...preferencesWithoutDroppedEvent, newEvent]
+            });
+        }
     }
 
     onEventResize(droppedEventId, timeEventResizedTo, typeResize) {
-        const droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
+        let dropType = EVENT;
+        let droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
+        if (!droppedEvent) {
+            droppedEvent = this.state.preferences.filter((evt) => evt.id === droppedEventId)[0];
+            dropType = PREFERENCE;
+        }
+
         const minVal = addMinutes(droppedEvent.start, 30);
 
         const newEvent = Object.assign({}, droppedEvent);
@@ -112,10 +136,17 @@ export class Demo extends React.PureComponent {
             newEvent.start = timeEventResizedTo;
         }
 
-        const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
-        this.setState({
-            events: [...eventsWithoutDroppedEvent, newEvent]
-        });
+        if (dropType === EVENT) {
+            const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
+            this.setState({
+                events: [...eventsWithoutDroppedEvent, newEvent]
+            });
+        } else {
+            const preferencesWithoutDropEvent = this.state.preferences.filter((evt) => evt.id !== droppedEventId);
+            this.setState({
+                preferences: [...preferencesWithoutDropEvent, newEvent]
+            });
+        }
     }
 
     onCalendarClick(timeClickedOn) {
@@ -134,10 +165,10 @@ export class Demo extends React.PureComponent {
         const eventComponents = this.state.events.map(this.getEvent);
         const preferenceComponents = this.state.preferences.map(this.getEvent);
 
-        const layers = [eventComponents, preferenceComponents];
+        const layers = [{name: EVENT, events: eventComponents, eventClassName: EVENT}, {name: PREFERENCE, events: preferenceComponents, eventClassName: PREFERENCE}];
 
         return (
-            <WeekCalendar events={layers}
+            <WeekCalendar layers={layers}
                           onCalendarClick={this.onCalendarClick.bind(this)}
                           onEventDrop={this.onEventDrop.bind(this)}
                           onEventResize={this.onEventResize.bind(this)}/>

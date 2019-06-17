@@ -22,28 +22,27 @@ export class WeekCalendar extends React.PureComponent {
     }
 
     getMinHour() {
-        if (!this.props.events)
+        if (!this.props.layers)
             return DEFAULT_MIN_HOUR;
-        let startHours = [].concat(...this.props.events).map(e => e.props.start.getHours());
+        let startHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.props.start.getHours());
         // subtracting one to have some more space
         return Math.max(0, Math.min(...startHours) - 1);
     }
 
     getMaxHour() {
-        if (!this.props.events)
+        if (!this.props.layers)
             return DEFAULT_MAX_HOUR;
 
-        let endHours = [].concat(...this.props.events).map(e => e.props.end.getHours());
+        let endHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.props.end.getHours());
         // adding one to have some more space
         return Math.min(Math.max(...endHours) + 1, 24);
     }
 
     getWeekCalendarStyle() {
         return {
-            // extra 1 for the time bar
-            gridTemplateRows: `repeat(${this.getMaxHour() - this.getMinHour() + 1}, 1fr)`,
-
             // extra 1 for the day bar
+            gridTemplateRows: `min-content repeat(${this.getMaxHour() - this.getMinHour()}, 1fr)`,
+            // extra 1 for the hour bar
             gridTemplateColumns: `repeat(${this.state.numDays + 1}, 1fr)`
         }
     }
@@ -61,7 +60,7 @@ export class WeekCalendar extends React.PureComponent {
                                onDoubleClick={this.props.onCalendarClick}
                                endHour={this.getMaxHour()}
                                numDays={this.state.numDays}
-                               events={this.props.events}/>
+                               layers={this.props.layers}/>
             </div>
         )
     }
@@ -69,7 +68,11 @@ export class WeekCalendar extends React.PureComponent {
 
 WeekCalendar.propTypes = {
     workWeek: PropTypes.bool.isRequired,
-    events: PropTypes.arrayOf(PropTypes.instanceOf(Object)),
+    layers: PropTypes.arrayOf(PropTypes.shape({
+        name: PropTypes.string,
+        events: PropTypes.arrayOf(PropTypes.object),
+        eventClassName: PropTypes.string
+    })),
     onCalendarClick: PropTypes.func,
     onEventDrop: PropTypes.func,
     onEventResize: PropTypes.func

@@ -8,6 +8,8 @@ import {decodeEvent, decodeEventRespectElement} from "../../decoder/MouseDecoder
 import {InputLayer} from "../layers/input/InputLayer";
 import {EventLayer} from "../layers/event/EventLayer";
 
+import classNames from 'classnames';
+
 const RESIZE = "resize";
 const DRAG = "drag";
 
@@ -17,7 +19,8 @@ export class EventCalendar extends React.PureComponent {
         super(props);
         this.state = {
             draggedEvent: null,
-            dragType: null
+            dragType: null,
+            dragLayer: null
         }
     }
 
@@ -40,20 +43,23 @@ export class EventCalendar extends React.PureComponent {
      * Called when a user starts dragging an event on the event calendar anywhere
      * @param evt the drag event
      * @param key the unique key for the given event
+     * @param layerName the name of which layer the event should be dragged on
      */
-    onEventDrag(evt, key) {
-        this.setState({draggedEvent: key, dragType: DRAG});
+    onEventDrag(evt, key, layerName) {
+        this.setState({draggedEvent: key, dragType: DRAG, dragLayer: layerName});
     }
 
     onEventDrop(evt) {
         if (this.state.dragType !== DRAG)
             return;
 
+        console.log(this.state.dragLayer);
+
         const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
         // we know it is a drag event event if the second part of conditional is not null (no typos here)
         if (this.props.onEventDrop && this.state.draggedEvent && timeEventDroppedOn)
-            this.props.onEventDrop(this.state.draggedEvent, timeEventDroppedOn);
+            this.props.onEventDrop(this.state.draggedEvent, this.state.dragLayer, timeEventDroppedOn);
     }
 
     onEventResize(evt, key, typeResize) {
@@ -76,10 +82,15 @@ export class EventCalendar extends React.PureComponent {
     }
 
     render() {
-        const eventLayers = this.props.events.map((layer, index) => {
+        // TODO allow them to pass in an object mapping layername to layer properties such as events, classnames etc
+        const eventLayers = this.props.layers.map(layer => {
             return (
-                <EventLayer key={index}
-                            events={layer}
+                <EventLayer key={layer.name}
+
+                            eventClassName={layer.eventClassName}
+
+                            name={layer.name}
+                            events={layer.events}
                             startHour={this.props.startHour}
                             endHour={this.props.endHour}
                             numDays={this.props.numDays}
@@ -110,5 +121,9 @@ EventCalendar.propTypes = {
     startHour: PropTypes.number.isRequired,
     endHour: PropTypes.number.isRequired,
     numDays: PropTypes.number.isRequired,
-    events: PropTypes.arrayOf(PropTypes.instanceOf(Object)),
+    layers: PropTypes.arrayOf(PropTypes.shape({
+        name: PropTypes.string,
+        events: PropTypes.arrayOf(PropTypes.object),
+        eventClassName: PropTypes.string
+    })),
 };

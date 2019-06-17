@@ -21,7 +21,7 @@ export class Event extends React.PureComponent {
         const formatStr = `${startFormatted}-${endFormatted}`;
         return (
             <div onDoubleClick={(e) => this.setState({editing: true})}
-                 style={{height: "100%", backgroundColor: "grey"}}>
+                 style={{height: "100%"}}>
                 {this.state.editing && <div>hello </div>}
                 <div>how are you</div>
                 <div>{formatStr}</div>

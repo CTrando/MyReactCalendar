@@ -3,8 +3,13 @@ import PropTypes from 'prop-types';
 import {differenceInCalendarDays, startOfWeek} from "date-fns";
 import {Resizable} from "../../../resize/Resizable";
 import "./EventLayer.css";
+import className from 'classnames';
 
 export class EventLayer extends React.PureComponent {
+    onEventDrag(id, evt) {
+        this.props.onEventDrag(evt, id, this.props.name);
+    }
+
     onDragOver(e) {
         e.preventDefault();
     }
@@ -17,8 +22,6 @@ export class EventLayer extends React.PureComponent {
     }
 
     getEventStyle(eventStart, eventEnd) {
-        let backgroundColor = "grey";
-
         const referenceStart = startOfWeek(eventStart, {weekStartsOn: 1});
         const eventColStart = differenceInCalendarDays(eventStart, referenceStart) + 1;
         const eventColEnd = differenceInCalendarDays(eventEnd, referenceStart) + 1;
@@ -26,36 +29,26 @@ export class EventLayer extends React.PureComponent {
         const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - this.props.startHour) * 12) + Math.floor(eventStart.getMinutes() / 5) + 1;
         const endTime5MinuteIntervals = Math.floor((eventEnd.getHours() - this.props.startHour) * 12) + Math.floor(eventEnd.getMinutes() / 5) + 1;
 
-        if (eventColStart !== eventColEnd)
-            backgroundColor = "red";
-
-
         return {
-            position: "relative",
-            backgroundColor: backgroundColor,
             gridRow: `${startTime5MinuteIntervals}/${endTime5MinuteIntervals}`,
-
-            // only support events that start and end on the same day, so can just use one
             gridColumn: `${eventColStart}/${eventColEnd}`,
-            border: "1px solid white",
-            zIndex: 10,
-            height: "100%"
         }
     }
 
     getEvents() {
         return this.props.events.map((evt) => {
             const style = this.getEventStyle(evt.props.start, evt.props.end);
+            const classNames = className(this.props.eventClassName, "event-wrapper");
             // TODO consider cloning all the functions into the evt component and then having the component rendering itself how it wants
             return (
-                <div key={evt.props.id} style={style}>
+                <div key={evt.props.id} style={style} className={classNames}>
                     <Resizable onResize={(e, position) => this.props.onEventResize(e, evt.props.id, position)}>
                         <div
                             id={`${evt.props.id}-drag`}
                             key={evt.props.start.toString() + evt.props.end.toString()}
 
                             draggable={true}
-                            onDrag={(e) => this.props.onEventDrag(e, evt.props.id)}
+                            onDrag={this.onEventDrag.bind(this, evt.props.id)}
                             onDrop={this.props.onEventDrop.bind(this)}
                             // setting data onto dataTransfer so that can recognize what div was dragged on drop
                             onDragStart={this.onDragStart.bind(this)}
@@ -99,6 +92,9 @@ EventLayer.defaultProps = {
 };
 
 EventLayer.propTypes = {
+    name: PropTypes.string.isRequired,
+    eventClassName: PropTypes.string,
+
     events: PropTypes.array.isRequired,
     startHour: PropTypes.number.isRequired,
     endHour: PropTypes.number.isRequired,
