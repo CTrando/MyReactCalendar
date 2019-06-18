@@ -7,8 +7,7 @@ import {HourLayer} from "../layers/hour/HourLayer";
 import {decodeEvent, decodeEventRespectElement} from "../../decoder/MouseDecoder";
 import {InputLayer} from "../layers/input/InputLayer";
 import {EventLayer} from "../layers/event/EventLayer";
-
-import classNames from 'classnames';
+import {layout} from "../layers/event/layout/EventLayerOuter";
 
 const RESIZE = "resize";
 const DRAG = "drag";
@@ -35,10 +34,6 @@ export class EventCalendar extends React.PureComponent {
             this.props.onDoubleClick(timeClickedOn);
     }
 
-    allowDrag(e) {
-        e.preventDefault();
-    }
-
     /**
      * Called when a user starts dragging an event on the event calendar anywhere
      * @param evt the drag event
@@ -52,8 +47,6 @@ export class EventCalendar extends React.PureComponent {
     onEventDrop(evt) {
         if (this.state.dragType !== DRAG)
             return;
-
-        console.log(this.state.dragLayer);
 
         const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 

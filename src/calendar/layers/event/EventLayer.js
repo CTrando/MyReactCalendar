@@ -4,6 +4,7 @@ import {differenceInCalendarDays, startOfWeek} from "date-fns";
 import {Resizable} from "../../../resize/Resizable";
 import "./EventLayer.css";
 import className from 'classnames';
+import {EventLayerOuterInator, layout} from "./layout/EventLayerOuter";
 
 export class EventLayer extends React.PureComponent {
     onEventDrag(id, evt) {
@@ -64,14 +65,7 @@ export class EventLayer extends React.PureComponent {
     }
 
     getEventCalendarStyle() {
-        const earliestHour = this.props.startHour;
-        const latestHour = this.props.endHour;
-
-        const diff = latestHour - earliestHour;
-        const diffIn5MinuteIntervals = diff * 12;
-
         return {
-            gridTemplateRows: `repeat(${diffIn5MinuteIntervals}, 1fr)`,
             gridTemplateColumns: `repeat(${this.props.numDays}, minmax(20px, 1fr))`
         }
     }
@@ -79,16 +73,30 @@ export class EventLayer extends React.PureComponent {
     render() {
         return (
             <div style={this.getEventCalendarStyle()} className="event-layer">
-                {this.getEvents()}
+                <EventLayerOuterInator
+                    events={this.props.events}
+                    startHour={this.props.startHour}
+                    endHour={this.props.endHour}
+
+                    eventClassName={this.props.eventClassName}
+                    onEventDragStart={this.onDragStart.bind(this)}
+                    onEventDragOver={this.onDragOver.bind(this)}
+                    onEventDrag={this.onEventDrag.bind(this)}
+                    onEventDrop={this.props.onEventDrop.bind(this)}
+                    onEventResize={this.props.onEventResize.bind(this)}
+                />
             </div>
         )
     }
 }
 
 EventLayer.defaultProps = {
-    onEventDrag: () => {},
-    onEventResize: () => {},
-    onEventDrop: () => {},
+    onEventDrag: () => {
+    },
+    onEventResize: () => {
+    },
+    onEventDrop: () => {
+    },
 };
 
 EventLayer.propTypes = {
@@ -99,6 +107,7 @@ EventLayer.propTypes = {
     startHour: PropTypes.number.isRequired,
     endHour: PropTypes.number.isRequired,
     numDays: PropTypes.number.isRequired,
+
     onEventDrag: PropTypes.func,
     onEventDrop: PropTypes.func,
     onEventResize: PropTypes.func
