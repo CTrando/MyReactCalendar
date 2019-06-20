@@ -37,9 +37,7 @@ function decodeEvent0(clientX, clientY, numDays, startHour, endHour) {
 
 export function decodeEventRespectElement(evt, numDays, startHour, endHour) {
     const data = JSON.parse(evt.dataTransfer.getData('text'));
-    console.log(data);
     const droppedEl = document.getElementById(data.id);
-    console.log(droppedEl);
     let newY = evt.clientY + droppedEl.getBoundingClientRect().top - data.mouseY;
 
     return decodeEvent0(evt.clientX, newY, numDays, startHour, endHour);

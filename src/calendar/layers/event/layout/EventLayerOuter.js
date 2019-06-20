@@ -4,19 +4,20 @@
  * Will lay out events in the given column
  **/
 
-import {getDay, isWithinRange} from 'date-fns';
+import {getDay, isBefore} from 'date-fns';
 import className from 'classnames';
 import React from "react";
 import {Resizable} from "../../../../resize/Resizable";
 
 export class EventLayerOuterInator extends React.PureComponent {
-    getEventStyle(eventStart, eventEnd, columnIndex) {
+    getEventStyle(eventStart, eventEnd, columnIndex, lastColumnIndex) {
+        const lastColumn = columnIndex === lastColumnIndex;
         const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - this.props.startHour) * 12) + Math.floor(eventStart.getMinutes() / 5) + 1;
         const endTime5MinuteIntervals = Math.floor((eventEnd.getHours() - this.props.startHour) * 12) + Math.floor(eventEnd.getMinutes() / 5) + 1;
 
         return {
             gridRow: `${startTime5MinuteIntervals}/${endTime5MinuteIntervals}`,
-            gridColumn: `${columnIndex}/${columnIndex}`,
+            gridColumn: `${columnIndex}/${lastColumn ? lastColumnIndex: columnIndex}`,
         }
     }
 
@@ -55,7 +56,7 @@ export class EventLayerOuterInator extends React.PureComponent {
                     let compStart = eventPerColumn.props.start;
                     let compEnd = eventPerColumn.props.end;
 
-                    if (isWithinRange(start, compStart, compEnd) || isWithinRange(end, compStart, compEnd)) {
+                    if (isBefore(start, compEnd) && isBefore(compStart, end)) {
                         hasOverlapped = true;
                         break;
                     }
@@ -80,17 +81,15 @@ export class EventLayerOuterInator extends React.PureComponent {
     /**
      * Returns divs for each events with the correct row/col start, row/end end
      */
-    layoutEventsPerDay(events) {
-        const eventColumnMap = this.getEventColumnMap(events);
+    layoutEventsPerDay(eventColumnMap) {
         const ret = [];
 
-        // eventsPerColumn is all the events for a specific "column" that we split the day column into
         for (let column = 0; column < eventColumnMap.length; column++) {
             const eventsPerColumn = eventColumnMap[column];
 
             for (let evt of eventsPerColumn) {
                 // adding 1 to column because in CSS arrays start at 1
-                const style = this.getEventStyle(evt.props.start, evt.props.end, column + 1, this.props.startHour);
+                const style = this.getEventStyle(evt.props.start, evt.props.end, column + 1, eventColumnMap.length);
                 const classNames = className(this.props.eventClassName, "event-wrapper");
                 ret.push(
                     <div key={evt.props.id} style={style} className={classNames}>
@@ -135,13 +134,20 @@ export class EventLayerOuterInator extends React.PureComponent {
         const ret = [];
         let eventsByDay = this.getEventsByDays();
 
+        console.log(eventsByDay);
+
         let idx = 0;
         for (let eventsPerDay of eventsByDay) {
             idx++;
             if (eventsPerDay) {
-                let styledEvents = this.layoutEventsPerDay(eventsPerDay);
+                // maps for a specific day how many columns are needed to represent them with conflicts
+                // so the first column has X events, the second has Y events and so on, and each
+                // event should be rendered in its respective column within the certain day
+                const eventColumnMap = this.getEventColumnMap(eventsPerDay);
+                let styledEvents = this.layoutEventsPerDay(eventColumnMap);
+                console.log(styledEvents);
                 const styledDays = (
-                    <div key={idx} style={this.getDayStyle(eventsPerDay.length)}>
+                    <div key={idx} style={this.getDayStyle(eventColumnMap.length)}>
                         {styledEvents}
                     </div>
                 );

@@ -7,7 +7,6 @@ import {HourLayer} from "../layers/hour/HourLayer";
 import {decodeEvent, decodeEventRespectElement} from "../../decoder/MouseDecoder";
 import {InputLayer} from "../layers/input/InputLayer";
 import {EventLayer} from "../layers/event/EventLayer";
-import {layout} from "../layers/event/layout/EventLayerOuter";
 
 const RESIZE = "resize";
 const DRAG = "drag";
@@ -48,11 +47,15 @@ export class EventCalendar extends React.PureComponent {
         if (this.state.dragType !== DRAG)
             return;
 
-        const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour);
+        try {
+            const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour);
 
-        // we know it is a drag event event if the second part of conditional is not null (no typos here)
-        if (this.props.onEventDrop && this.state.draggedEvent && timeEventDroppedOn)
-            this.props.onEventDrop(this.state.draggedEvent, this.state.dragLayer, timeEventDroppedOn);
+            // we know it is a drag event event if the second part of conditional is not null (no typos here)
+            if (this.props.onEventDrop && this.state.draggedEvent && timeEventDroppedOn)
+                this.props.onEventDrop(this.state.draggedEvent, this.state.dragLayer, timeEventDroppedOn);
+        } catch(error)  {
+            console.warn(error);
+        }
     }
 
     onEventResize(evt, key, typeResize) {
