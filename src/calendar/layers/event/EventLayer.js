@@ -71,20 +71,19 @@ export class EventLayer extends React.PureComponent {
     }
 
     render() {
+        const info = Object.assign({}, this.props, {
+            onEventDragStart: this.onDragStart.bind(this),
+            onEventDragOver: this.onDragOver.bind(this),
+            onEventDrop: this.props.onEventDrop.bind(this),
+            onEventDrag: this.onEventDrag.bind(this),
+            onEventResize: this.props.onEventResize.bind(this),
+        });
+
+        const styledEvents = new EventLayerOuterInator(info).layout();
+
         return (
             <div style={this.getEventCalendarStyle()} className="event-layer">
-                <EventLayerOuterInator
-                    events={this.props.events}
-                    startHour={this.props.startHour}
-                    endHour={this.props.endHour}
-
-                    eventClassName={this.props.eventClassName}
-                    onEventDragStart={this.onDragStart.bind(this)}
-                    onEventDragOver={this.onDragOver.bind(this)}
-                    onEventDrag={this.onEventDrag.bind(this)}
-                    onEventDrop={this.props.onEventDrop.bind(this)}
-                    onEventResize={this.props.onEventResize.bind(this)}
-                />
+                {styledEvents}
             </div>
         )
     }
