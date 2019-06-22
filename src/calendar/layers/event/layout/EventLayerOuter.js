@@ -4,7 +4,7 @@
  * Will lay out events in the given column
  **/
 
-import {getDay, isBefore, differenceInMinutes} from 'date-fns';
+import {differenceInMinutes, getDay, isBefore} from 'date-fns';
 import className from 'classnames';
 import React from "react";
 import {Resizable} from "../../../../resize/Resizable";
@@ -28,8 +28,8 @@ export class EventLayerOuterInator {
     }
 
     getEventStyle(event, eventColumnMap, columnIndex) {
-        const eventStart = event.props.start;
-        const eventEnd = event.props.end;
+        const eventStart = event.start;
+        const eventEnd = event.end;
         const lastIndex = this.calculateEndColumnIndex(event, eventColumnMap, columnIndex);
 
         const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - this.props.startHour) * 12) + Math.floor(eventStart.getMinutes() / 5) + 1;
@@ -42,7 +42,7 @@ export class EventLayerOuterInator {
     }
 
     overlap(evt1, evt2) {
-        return isBefore(evt1.props.start, evt2.props.end) && isBefore(evt2.props.start, evt1.props.end);
+        return isBefore(evt1.start, evt2.end) && isBefore(evt2.start, evt1.end);
     }
 
     /**
@@ -52,7 +52,7 @@ export class EventLayerOuterInator {
         const ret = new Array(5);
         for (let event of this.props.events) {
             // arrays start at 0 so subtract 1 from it since Monday is 1 when I want it to be 0
-            let day = getDay(event.props.start) - 1;
+            let day = getDay(event.start) - 1;
             if (!ret[day]) {
                 ret[day] = [];
             }
@@ -109,23 +109,20 @@ export class EventLayerOuterInator {
                 // adding 1 to column because in CSS arrays start at 1
                 const style = this.getEventStyle(evt, eventColumnMap, column + 1);
                 const classNames = className(this.props.eventClassName, "event-wrapper");
+
+                const augmentedEvent = Object.assign({}, evt, {
+                    key: evt.start.toString() + evt.end.toString(),
+                    onEventDrag: this.props.onEventDrag.bind(this),
+                    onEventDrop: this.props.onEventDrop.bind(this),
+                    onEventDragStart: this.props.onEventDragStart.bind(this),
+                    onEventDragOver: this.props.onEventDragOver.bind(this),
+                    onEventResize: (e, position) => this.props.onEventResize(e, evt.id, position)
+                });
+
                 ret.push(
-                    <div key={evt.props.id} style={style} className={classNames}>
-                        <Resizable onResize={(e, position) => this.props.onEventResize(e, evt.props.id, position)}>
-                            <div
-                                id={`${evt.props.id}-drag`}
-                                key={evt.props.start.toString() + evt.props.end.toString()}
-
-                                draggable={true}
-                                onDrag={this.props.onEventDrag.bind(this, evt.props.id)}
-                                onDrop={this.props.onEventDrop.bind(this)}
-                                // setting data onto dataTransfer so that can recognize what div was dragged on drop
-                                onDragStart={this.props.onEventDragStart.bind(this)}
-                                onDragOver={this.props.onEventDragOver.bind(this)}
-                                style={{height: "100%"}}>
-
-                                {evt}
-                            </div>
+                    <div key={evt.id} style={style} className={classNames}>
+                        <Resizable onResize={(e, position) => this.props.onEventResize(e, evt.id, position)}>
+                            {this.props.getEvent(augmentedEvent)}
                         </Resizable>
                     </div>
                 );
@@ -150,8 +147,8 @@ export class EventLayerOuterInator {
 
     sortEvents(events) {
         return events.sort((e1, e2) => {
-            let e1duration = differenceInMinutes(e1.props.start, e1.props.end);
-            let e2duration = differenceInMinutes(e2.props.start, e2.props.end);
+            let e1duration = differenceInMinutes(e1.start, e1.end);
+            let e2duration = differenceInMinutes(e2.start, e2.end);
 
             return e1duration < e2duration;
         });
@@ -160,8 +157,6 @@ export class EventLayerOuterInator {
     layout() {
         const ret = [];
         let eventsByDay = this.getEventsByDays();
-
-        console.log(eventsByDay);
 
         let idx = 0;
         for (let eventsPerDay of eventsByDay) {
@@ -184,7 +179,6 @@ export class EventLayerOuterInator {
                 ret.push(<div key={idx}/>);
             }
         }
-        console.log(ret);
         return ret;
     }
 }

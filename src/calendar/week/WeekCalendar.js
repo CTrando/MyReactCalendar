@@ -24,7 +24,7 @@ export class WeekCalendar extends React.PureComponent {
     getMinHour() {
         if (!this.props.layers)
             return DEFAULT_MIN_HOUR;
-        let startHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.props.start.getHours());
+        let startHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.start.getHours());
         // subtracting one to have some more space
         return Math.max(0, Math.min(...startHours) - 1);
     }
@@ -33,7 +33,7 @@ export class WeekCalendar extends React.PureComponent {
         if (!this.props.layers)
             return DEFAULT_MAX_HOUR;
 
-        let endHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.props.end.getHours());
+        let endHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.end.getHours());
         // adding one to have some more space
         return Math.min(Math.max(...endHours) + 1, 24);
     }
@@ -58,6 +58,7 @@ export class WeekCalendar extends React.PureComponent {
                                onEventDrop={this.props.onEventDrop}
                                onEventResize={this.props.onEventResize}
                                onDoubleClick={this.props.onCalendarClick}
+                               getEvent={this.props.getEvent}
                                endHour={this.getMaxHour()}
                                numDays={this.state.numDays}
                                layers={this.props.layers}/>
@@ -75,7 +76,8 @@ WeekCalendar.propTypes = {
     })),
     onCalendarClick: PropTypes.func,
     onEventDrop: PropTypes.func,
-    onEventResize: PropTypes.func
+    onEventResize: PropTypes.func,
+    getEvent: PropTypes.func
 };
 
 WeekCalendar.defaultProps = {

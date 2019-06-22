@@ -4,7 +4,7 @@ import {differenceInCalendarDays, startOfWeek} from "date-fns";
 import {Resizable} from "../../../resize/Resizable";
 import "./EventLayer.css";
 import className from 'classnames';
-import {EventLayerOuterInator, layout} from "./layout/EventLayerOuter";
+import {EventLayerOuterInator} from "./layout/EventLayerOuter";
 
 export class EventLayer extends React.PureComponent {
     onEventDrag(id, evt) {
@@ -72,6 +72,7 @@ export class EventLayer extends React.PureComponent {
 
     render() {
         const info = Object.assign({}, this.props, {
+            // renaming method names
             onEventDragStart: this.onDragStart.bind(this),
             onEventDragOver: this.onDragOver.bind(this),
             onEventDrop: this.props.onEventDrop.bind(this),

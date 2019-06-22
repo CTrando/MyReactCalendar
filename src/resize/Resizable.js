@@ -7,15 +7,23 @@ export const START = "start";
 
 export class Resizable extends React.PureComponent {
 
+    startResize(e) {
+        this.props.onResize(e, START);
+    }
+
+    endResize(e) {
+        this.props.onResize(e, END);
+    }
+
     getStartResize() {
         return (
-            <button draggable={true} className="resize-widget resize-widget-start" onDrag={(e) => this.props.onResize(e, START)} />
+            <button draggable={true} className="resize-widget resize-widget-start" onDrag={this.startResize.bind(this)}/>
         )
     }
 
     getEndResize() {
         return (
-            <button draggable={true} className="resize-widget resize-widget-end" onDrag={(e) => this.props.onResize(e, END)} />
+            <button draggable={true} className="resize-widget resize-widget-end" onDrag={this.endResize.bind(this)}/>
         )
     }
 

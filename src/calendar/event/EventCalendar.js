@@ -85,6 +85,8 @@ export class EventCalendar extends React.PureComponent {
 
                             eventClassName={layer.eventClassName}
 
+                            getEvent={this.props.getEvent}
+
                             name={layer.name}
                             events={layer.events}
                             startHour={this.props.startHour}

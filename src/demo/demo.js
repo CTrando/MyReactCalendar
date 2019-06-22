@@ -22,9 +22,9 @@ const PREFERENCE = "preference";
 
 export class Demo extends React.PureComponent {
 
-    getEvent({id, start, end}) {
+    getEvent(props) {
         return (
-            <Event id={id} start={start} end={end}/>
+            <Event {...props}/>
         )
     }
 
@@ -162,13 +162,14 @@ export class Demo extends React.PureComponent {
 
 
     render() {
-        const eventComponents = this.state.events.map(this.getEvent);
-        const preferenceComponents = this.state.preferences.map(this.getEvent);
+        const eventComponents = this.state.events;
+        const preferenceComponents = this.state.preferences;
 
         const layers = [{name: EVENT, events: eventComponents, eventClassName: EVENT}, {name: PREFERENCE, events: preferenceComponents, eventClassName: PREFERENCE}];
 
         return (
             <WeekCalendar layers={layers}
+                          getEvent={this.getEvent.bind(this)}
                           onCalendarClick={this.onCalendarClick.bind(this)}
                           onEventDrop={this.onEventDrop.bind(this)}
                           onEventResize={this.onEventResize.bind(this)}/>
