@@ -7,13 +7,14 @@
 import {differenceInMinutes, getDay, isBefore} from 'date-fns';
 import className from 'classnames';
 import React from "react";
+import PropTypes from 'prop-types';
 import {Resizable} from "../../../../resize/Resizable";
 
-export class EventLayerOuterInator {
+const NUM_DAYS = 5;
+const INTERVALS = 5;
+const INTERVALS_PER_HOUR = 60 / INTERVALS;
 
-    constructor(props) {
-        this.props = props;
-    }
+export class EventLayerOuterInator extends React.PureComponent {
 
     calculateEndColumnIndex(event, eventColumnMap, columnIndex) {
         let endIndex = columnIndex + 1;
@@ -32,8 +33,10 @@ export class EventLayerOuterInator {
         const eventEnd = event.end;
         const lastIndex = this.calculateEndColumnIndex(event, eventColumnMap, columnIndex);
 
-        const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - this.props.startHour) * 12) + Math.floor(eventStart.getMinutes() / 5) + 1;
-        const endTime5MinuteIntervals = Math.floor((eventEnd.getHours() - this.props.startHour) * 12) + Math.floor(eventEnd.getMinutes() / 5) + 1;
+        const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - this.props.startHour) * INTERVALS_PER_HOUR)
+            + Math.floor(eventStart.getMinutes() / INTERVALS) + 1;
+        const endTime5MinuteIntervals = Math.floor((eventEnd.getHours() - this.props.startHour) * INTERVALS_PER_HOUR)
+            + Math.floor(eventEnd.getMinutes() / INTERVALS) + 1;
 
         return {
             gridRow: `${startTime5MinuteIntervals}/${endTime5MinuteIntervals}`,
@@ -49,7 +52,7 @@ export class EventLayerOuterInator {
      * Returns an array of lists where the indices represent the days and the lists are the events for that specific day
      */
     getEventsByDays() {
-        const ret = new Array(5);
+        const ret = new Array(NUM_DAYS);
         for (let event of this.props.events) {
             // arrays start at 0 so subtract 1 from it since Monday is 1 when I want it to be 0
             let day = getDay(event.start) - 1;
@@ -61,12 +64,29 @@ export class EventLayerOuterInator {
         return ret;
     }
 
+    /**
+     * Takes an array of events per a day, for example all events for Monday and then arranges them such that
+     * they would be most optimally shown in columns in the case that some of them may collide
+     *
+     * e.g.
+     *
+     * E1 E2
+     *    E2
+     *
+     * Would return an array with two elements for the two columns, and each column would have a list of events
+     * for them.
+     *
+     * @param events array of events per a day
+     */
     getEventColumnMap(events) {
         // columns is a 2D array storing lists of events per column
         let columns = [];
+
+        // for each event we will determine what column we should put it in
         for (let event of events) {
             let curColumn = null;
 
+            // loop over the existing columns
             for (let column of columns) {
                 if (column.length === 0) {
                     break;
@@ -80,6 +100,8 @@ export class EventLayerOuterInator {
                     }
                 }
 
+                // if the event has not overlapped with any events in the column
+                // then we can safely place it in this column
                 if (!hasOverlapped) {
                     curColumn = column;
                     break;
@@ -136,7 +158,7 @@ export class EventLayerOuterInator {
         const latestHour = this.props.endHour;
 
         const diff = latestHour - earliestHour;
-        const diffIn5MinuteIntervals = diff * 12;
+        const diffIn5MinuteIntervals = diff * INTERVALS_PER_HOUR;
 
         return {
             display: "grid",
@@ -181,4 +203,29 @@ export class EventLayerOuterInator {
         }
         return ret;
     }
+
+    render() {
+        return (
+            <React.Fragment>
+                {this.layout()}
+            </React.Fragment>
+        );
+    }
 }
+
+EventLayerOuterInator.propTypes = {
+    name: PropTypes.string.isRequired,
+    eventClassName: PropTypes.string,
+    getEvent: PropTypes.func,
+
+    events: PropTypes.array.isRequired,
+    startHour: PropTypes.number.isRequired,
+    endHour: PropTypes.number.isRequired,
+    numDays: PropTypes.number.isRequired,
+
+    onEventDrag: PropTypes.func,
+    onEventDrop: PropTypes.func,
+    onEventResize: PropTypes.func,
+    onEventDragStart: PropTypes.func,
+    onEventDragOver: PropTypes.func,
+};

@@ -11,10 +11,6 @@ export class Event extends React.PureComponent {
         }
     }
 
-    onResize(e, position) {
-        this.props.onEventResize(e, this.props.id, position)
-    }
-
     /**
      * Returns a renderable react component
      */

@@ -98,7 +98,6 @@ export class Demo extends React.PureComponent {
         if (newEvent.start.getDay() !== newEvent.end.getDay())
             return;
 
-
         if (dropType === EVENT) {
             const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
             this.setState({
@@ -165,7 +164,10 @@ export class Demo extends React.PureComponent {
         const eventComponents = this.state.events;
         const preferenceComponents = this.state.preferences;
 
-        const layers = [{name: EVENT, events: eventComponents, eventClassName: EVENT}, {name: PREFERENCE, events: preferenceComponents, eventClassName: PREFERENCE}];
+        const layers = [
+            {name: EVENT, events: eventComponents, eventClassName: EVENT},
+            {name: PREFERENCE, events: preferenceComponents, eventClassName: PREFERENCE}
+        ];
 
         return (
             <WeekCalendar layers={layers}

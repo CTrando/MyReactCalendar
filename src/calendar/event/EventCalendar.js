@@ -82,9 +82,7 @@ export class EventCalendar extends React.PureComponent {
         const eventLayers = this.props.layers.map(layer => {
             return (
                 <EventLayer key={layer.name}
-
                             eventClassName={layer.eventClassName}
-
                             getEvent={this.props.getEvent}
 
                             name={layer.name}
@@ -104,7 +102,9 @@ export class EventCalendar extends React.PureComponent {
             <div id="event-calendar" style={this.getEventCalendarWrapperStyle()}>
                 <HourLayer startHour={this.props.startHour} endHour={this.props.endHour}/>
                 <DayLayer numDays={this.props.numDays}/>
-                <InputLayer onDoubleClick={this.onDoubleClick.bind(this)} onDrop={this.onEventDrop.bind(this)}/>
+                <InputLayer
+                    onDoubleClick={this.onDoubleClick.bind(this)}
+                    onEventDrop={this.onEventDrop.bind(this)}/>
 
                 {eventLayers}
             </div>

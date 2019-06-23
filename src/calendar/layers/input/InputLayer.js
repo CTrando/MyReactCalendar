@@ -9,8 +9,8 @@ export class InputLayer extends React.PureComponent {
         return (
             <div className="input-layer"
                  onDoubleClick={this.props.onDoubleClick}
-                 onDrop={this.props.onDrop}
-                 onDragOver={this.props.onDragOver}
+                 onDrop={this.props.onEventDrop}
+                 onDragOver={this.props.onEventDragOver}
             />
         );
     }
@@ -19,12 +19,12 @@ export class InputLayer extends React.PureComponent {
 InputLayer.defaultProps = {
     onDoubleClick: () => {
     },
-    onDrop: () => {
+    onEventDrop: () => {
     },
-    onDragOver: (e) => e.preventDefault(),
+    onEventDragOver: (e) => e.preventDefault(),
 };
 
 InputLayer.propTypes = {
     onDoubleClick: PropTypes.func,
-    onDrop: PropTypes.func,
+    onEventDrop: PropTypes.func,
 };
