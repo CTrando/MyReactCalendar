@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/MyWeekCalendar/static/css/main.fadb26a4.chunk.css",
+    "main.js": "/MyWeekCalendar/static/js/main.efbac78b.chunk.js",
+    "main.js.map": "/MyWeekCalendar/static/js/main.efbac78b.chunk.js.map",
+    "runtime~main.js": "/MyWeekCalendar/static/js/runtime~main.62b3e093.js",
+    "runtime~main.js.map": "/MyWeekCalendar/static/js/runtime~main.62b3e093.js.map",
+    "static/js/2.dbfbbc0c.chunk.js": "/MyWeekCalendar/static/js/2.dbfbbc0c.chunk.js",
+    "static/js/2.dbfbbc0c.chunk.js.map": "/MyWeekCalendar/static/js/2.dbfbbc0c.chunk.js.map",
+    "index.html": "/MyWeekCalendar/index.html",
+    "precache-manifest.df3de276d8bb0049be322baddec1e9ec.js": "/MyWeekCalendar/precache-manifest.df3de276d8bb0049be322baddec1e9ec.js",
+    "service-worker.js": "/MyWeekCalendar/service-worker.js",
+    "static/css/main.fadb26a4.chunk.css.map": "/MyWeekCalendar/static/css/main.fadb26a4.chunk.css.map"
+  }
+}
