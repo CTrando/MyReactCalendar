@@ -9,6 +9,7 @@ export class EventLayer extends React.PureComponent {
     }
 
     onEventDragOver(e) {
+        e.stopPropagation();
         e.preventDefault();
     }
 

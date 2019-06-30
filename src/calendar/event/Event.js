@@ -36,7 +36,6 @@ export class Event extends React.PureComponent {
                 <div onDoubleClick={(e) => this.setState({editing: true})}
                      style={{height: "100%"}}>
                     {this.state.editing && <div>hello </div>}
-                    <div>how are you</div>
                     <div>{formatStr}</div>
                 </div>
             </div>

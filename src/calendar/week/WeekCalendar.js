@@ -43,7 +43,7 @@ export class WeekCalendar extends React.PureComponent {
             // extra 1 for the day bar
             gridTemplateRows: `min-content repeat(${this.getMaxHour() - this.getMinHour()}, 1fr)`,
             // extra 1 for the hour bar
-            gridTemplateColumns: `repeat(${this.state.numDays + 1}, 1fr)`
+            gridTemplateColumns: `min-content repeat(${this.state.numDays}, 1fr)`
         }
     }
 

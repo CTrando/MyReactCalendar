@@ -17,13 +17,24 @@ export class Resizable extends React.PureComponent {
 
     getStartResize() {
         return (
-            <button draggable={true} className="resize-widget resize-widget-start" onDrag={this.startResize.bind(this)}/>
+            <div draggable={true}
+                    className="resize-widget resize-widget-start"
+                    onDrag={this.startResize.bind(this)}
+                    onDragOver={this.props.onDragOver.bind(this)}
+                    onDrop={this.props.onDrop.bind(this)}
+            />
         )
     }
 
     getEndResize() {
+                console.log(this.props);
         return (
-            <button draggable={true} className="resize-widget resize-widget-end" onDrag={this.endResize.bind(this)}/>
+            <div draggable={true}
+                    className="resize-widget resize-widget-end"
+                    onDrag={this.endResize.bind(this)}
+                    onDragOver={this.props.onDragOver.bind(this)}
+                    onDrop={this.props.onDrop.bind(this)}
+            />
         )
     }
 
@@ -38,7 +49,17 @@ export class Resizable extends React.PureComponent {
     }
 }
 
+Resizable.defaultProps = {
+    onResize: () => {
+    },
+    onDrop: () => {
+    },
+    onDragOver: () => {
+    }
+};
 
 Resizable.propTypes = {
-    onResize: PropTypes.func.isRequired
+    onResize: PropTypes.func,
+    onDrop: PropTypes.func,
+    onDragOver: PropTypes.func
 };

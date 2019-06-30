@@ -16,22 +16,48 @@ const INTERVALS_PER_HOUR = 60 / INTERVALS;
 
 export class EventLayerOuterInator extends React.PureComponent {
 
-    calculateEndColumnIndex(event, eventColumnMap, columnIndex) {
+    /**
+     * Returns the event column style inside a day
+     *
+     * e.g
+     * Given E1, E2, E3, E4 we calculate such that the result is:
+     *
+     * E1 E2 E3
+     * E1 E2
+     * E1 E4 E4
+     *
+     * This method handles the internal styling of each event so the grid works out
+     */
+    getEventColumnStyle(event, eventColumnMap, columnIndex) {
+        // start endIndex one more than column index because if
+        // we start with column index, it will immediately conflict with itself
+        // in its own column
         let endIndex = columnIndex + 1;
         for (; endIndex < eventColumnMap.length; endIndex++) {
-            for (let eventInColumn of eventColumnMap[columnIndex]) {
-                if (this.overlap(event, eventInColumn)) {
-                    return endIndex;
-                }
+            const eventsPerColumn = eventColumnMap[endIndex];
+
+            // check if events in the next column are contained by our current column
+            // if so, then we cannot extend our current event anymore so return early
+            if (eventsPerColumn.some((e) => this.isContainedBy(e, event))) {
+                return {
+                    gridColumn: `${columnIndex + 1}/${endIndex}`
+                };
             }
         }
-        return eventColumnMap.length + 1;
+
+        // event can extend all the way to the end because no events were contained by it
+        return {
+            gridColumn: `${columnIndex + 1}/${eventColumnMap.length + 1}`
+        };
     }
 
+    /**
+     * Gets the styling for the events, including row style and column style
+     */
     getEventStyle(event, eventColumnMap, columnIndex) {
         const eventStart = event.start;
         const eventEnd = event.end;
-        const lastIndex = this.calculateEndColumnIndex(event, eventColumnMap, columnIndex);
+        const gridColPos = this.getEventColumnStyle(event, eventColumnMap, columnIndex);
 
         const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - this.props.startHour) * INTERVALS_PER_HOUR)
             + Math.floor(eventStart.getMinutes() / INTERVALS) + 1;
@@ -40,12 +66,15 @@ export class EventLayerOuterInator extends React.PureComponent {
 
         return {
             gridRow: `${startTime5MinuteIntervals}/${endTime5MinuteIntervals}`,
-            gridColumn: `${columnIndex}/${lastIndex}`,
-        }
+            ...gridColPos,
+        };
     }
 
-    overlap(evt1, evt2) {
-        return isBefore(evt1.start, evt2.end) && isBefore(evt2.start, evt1.end);
+    /**
+     * Returns whether evt1 is contained by evt2
+     */
+    isContainedBy(evt1, evt2) {
+        return isBefore(evt2.start, evt1.start) && isBefore(evt1.end, evt2.end);
     }
 
     /**
@@ -92,17 +121,11 @@ export class EventLayerOuterInator extends React.PureComponent {
                     break;
                 }
 
-                let hasOverlapped;
-                for (let eventPerColumn of column) {
-                    if (this.overlap(event, eventPerColumn)) {
-                        hasOverlapped = true;
-                        break;
-                    }
-                }
+                // if the given event is not contained by any of the events in the column
+                // then we can safely place down the event in that column
+                let shouldPlaceInCol = column.every((eventPerColumn) => !this.isContainedBy(event, eventPerColumn));
 
-                // if the event has not overlapped with any events in the column
-                // then we can safely place it in this column
-                if (!hasOverlapped) {
+                if (shouldPlaceInCol) {
                     curColumn = column;
                     break;
                 }
@@ -114,7 +137,6 @@ export class EventLayerOuterInator extends React.PureComponent {
                 columns.push([event]);
             }
         }
-
         return columns;
     }
 
@@ -128,11 +150,11 @@ export class EventLayerOuterInator extends React.PureComponent {
             const eventsPerColumn = eventColumnMap[column];
 
             for (let evt of eventsPerColumn) {
-                // adding 1 to column because in CSS arrays start at 1
-                const style = this.getEventStyle(evt, eventColumnMap, column + 1);
+                const style = this.getEventStyle(evt, eventColumnMap, column);
                 const classNames = className(this.props.eventClassName, "event-wrapper");
 
-                const augmentedEvent = Object.assign({}, evt, {
+                // user will determine what kind of component to render based on the information given here
+                const eventObj = Object.assign({}, evt, {
                     key: evt.start.toString() + evt.end.toString(),
                     onEventDrag: this.props.onEventDrag.bind(this),
                     onEventDrop: this.props.onEventDrop.bind(this),
@@ -143,8 +165,10 @@ export class EventLayerOuterInator extends React.PureComponent {
 
                 ret.push(
                     <div key={evt.id} style={style} className={classNames}>
-                        <Resizable onResize={(e, position) => this.props.onEventResize(e, evt.id, position)}>
-                            {this.props.getEvent(augmentedEvent)}
+                        <Resizable onResize={(e, position) => this.props.onEventResize(e, evt.id, position)}
+                                   onDrop={this.props.onEventDrop.bind(this)}
+                                   onDragOver={this.props.onEventDragOver.bind(this)}>
+                            {this.props.getEvent(eventObj)}
                         </Resizable>
                     </div>
                 );
@@ -167,12 +191,15 @@ export class EventLayerOuterInator extends React.PureComponent {
         };
     }
 
+    /**
+     * Sort events by duration - longest duration first
+     */
     sortEvents(events) {
         return events.sort((e1, e2) => {
             let e1duration = differenceInMinutes(e1.start, e1.end);
             let e2duration = differenceInMinutes(e2.start, e2.end);
 
-            return e1duration < e2duration;
+            return e1duration - e2duration;
         });
     }
 
