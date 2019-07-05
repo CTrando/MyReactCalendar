@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/MyWeekCalendar/static/css/main.fadb26a4.chunk.css",
-    "main.js": "/MyWeekCalendar/static/js/main.efbac78b.chunk.js",
-    "main.js.map": "/MyWeekCalendar/static/js/main.efbac78b.chunk.js.map",
+    "main.css": "/MyWeekCalendar/static/css/main.0222f8d4.chunk.css",
+    "main.js": "/MyWeekCalendar/static/js/main.0849d000.chunk.js",
+    "main.js.map": "/MyWeekCalendar/static/js/main.0849d000.chunk.js.map",
     "runtime~main.js": "/MyWeekCalendar/static/js/runtime~main.62b3e093.js",
     "runtime~main.js.map": "/MyWeekCalendar/static/js/runtime~main.62b3e093.js.map",
-    "static/js/2.dbfbbc0c.chunk.js": "/MyWeekCalendar/static/js/2.dbfbbc0c.chunk.js",
-    "static/js/2.dbfbbc0c.chunk.js.map": "/MyWeekCalendar/static/js/2.dbfbbc0c.chunk.js.map",
+    "static/js/2.93258fc8.chunk.js": "/MyWeekCalendar/static/js/2.93258fc8.chunk.js",
+    "static/js/2.93258fc8.chunk.js.map": "/MyWeekCalendar/static/js/2.93258fc8.chunk.js.map",
     "index.html": "/MyWeekCalendar/index.html",
-    "precache-manifest.df3de276d8bb0049be322baddec1e9ec.js": "/MyWeekCalendar/precache-manifest.df3de276d8bb0049be322baddec1e9ec.js",
+    "precache-manifest.dbd616726d21497d1cdab8276e6e4e8e.js": "/MyWeekCalendar/precache-manifest.dbd616726d21497d1cdab8276e6e4e8e.js",
     "service-worker.js": "/MyWeekCalendar/service-worker.js",
-    "static/css/main.fadb26a4.chunk.css.map": "/MyWeekCalendar/static/css/main.fadb26a4.chunk.css.map"
+    "static/css/main.0222f8d4.chunk.css.map": "/MyWeekCalendar/static/css/main.0222f8d4.chunk.css.map"
   }
 }
