@@ -1,0 +1,18 @@
+
+.hour-bar {
+    padding: 0 1rem;
+    border-right: 1px solid black;
+    border-left: 1px solid black;
+}
+
+.hour-step-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding-right: 1rem;
+
+    border-right: 1px solid black;
+}
+
+

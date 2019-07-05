@@ -1,13 +1,13 @@
 import {setHours, setMinutes, setSeconds, setDay} from 'date-fns';
 
 export function decodeEvent(evt, numDays, startHour, endHour) {
-    return decodeEvent0(evt.clientX, evt.clientY, numDays, startHour, endHour);
+    return decodeEvent0(evt, evt.clientX, evt.clientY, numDays, startHour, endHour);
 }
 
 /**
  * Returns the hour and day of where the click occurred
  */
-function decodeEvent0(clientX, clientY, numDays, startHour, endHour) {
+function decodeEvent0(evt, clientX, clientY, numDays, startHour, endHour) {
     const calendar = document.getElementById("event-calendar");
     const boundingBox = calendar.getBoundingClientRect();
 
@@ -17,8 +17,10 @@ function decodeEvent0(clientX, clientY, numDays, startHour, endHour) {
     // y is px for hours
     const y = clientY - boundingBox.top;
 
-    if(x < 0 || y < 0)
+    if(x < 0 || y < 0) {
+        console.error("Somehow could not decode event, event is" + evt);
         return undefined;
+    }
 
     const numHours = endHour - startHour;
 
@@ -40,5 +42,5 @@ export function decodeEventRespectElement(evt, numDays, startHour, endHour) {
     const droppedEl = document.getElementById(data.id);
     let newY = evt.clientY + droppedEl.getBoundingClientRect().top - data.mouseY;
 
-    return decodeEvent0(evt.clientX, newY, numDays, startHour, endHour);
+    return decodeEvent0(evt, evt.clientX, newY, numDays, startHour, endHour);
 }

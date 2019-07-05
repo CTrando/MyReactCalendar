@@ -1,0 +1,17 @@
+.event-layer {
+    grid-template-rows: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+}
+
+
+.event-wrapper {
+    position: relative;
+    border: 1px solid white;
+    z-index: 10;
+    height: 100%;
+}

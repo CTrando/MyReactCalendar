@@ -4,22 +4,17 @@ import "./EventLayer.css";
 import {EventLayerOuterInator} from "./layout/EventLayerOuter";
 
 export class EventLayer extends React.PureComponent {
+
+    /**
+     * Called when event is dragged, is a closure that appends the layer name
+     */
     onEventDrag(id, evt) {
         this.props.onEventDrag(evt, id, this.props.name);
     }
 
-    onEventDragOver(e) {
-        e.stopPropagation();
-        e.preventDefault();
-    }
-
-    onEventDragStart(e) {
-        e.dataTransfer.setData('text', JSON.stringify({
-            mouseY: e.clientY,
-            id: e.target.id
-        }));
-    }
-
+    /**
+     * Gets the style for the specific layer
+     */
     getEventCalendarStyle() {
         return {
             gridTemplateColumns: `repeat(${this.props.numDays}, minmax(20px, 1fr))`
@@ -30,8 +25,6 @@ export class EventLayer extends React.PureComponent {
         const props = Object.assign({}, this.props, {
             // redefine prop functions with current functions which have bounded arguments
             onEventDrag: this.onEventDrag.bind(this),
-            onEventDragOver: this.onEventDragOver.bind(this),
-            onEventDragStart: this.onEventDragStart.bind(this)
         });
 
         // can just pass down the props
@@ -54,6 +47,17 @@ EventLayer.defaultProps = {
     },
     onEventDrop: () => {
     },
+    onEventDragOver: (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+    },
+    onEventDragStart: (e) => {
+        e.dataTransfer.setData('text', JSON.stringify({
+            mouseY: e.clientY,
+            id: e.target.id
+        }));
+        e.stopPropagation();
+    }
 };
 
 EventLayer.propTypes = {

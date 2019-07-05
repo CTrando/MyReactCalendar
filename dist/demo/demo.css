@@ -1,0 +1,9 @@
+.event {
+    background-color: blue;
+}
+
+.preference {
+    background-color: red;
+    z-index: 20;
+    opacity: .8;
+}

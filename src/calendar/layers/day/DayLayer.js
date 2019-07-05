@@ -1,8 +1,11 @@
 import React from 'react';
 import "./DayLayer.css";
 import PropTypes from 'prop-types';
+import {DEFAULT_NUM_DAYS} from "../../../Constants";
 
-
+/**
+ * Renders the borders for the days
+ */
 export class DayLayer extends React.PureComponent {
 
     getDayLines() {
@@ -17,9 +20,7 @@ export class DayLayer extends React.PureComponent {
 
     getDayStyle() {
         return {
-            display: "grid",
             gridTemplateColumns: `repeat(${this.props.numDays}, 1fr)`,
-            height: "100%",
         };
     }
 
@@ -34,4 +35,8 @@ export class DayLayer extends React.PureComponent {
 
 DayLayer.propTypes = {
     numDays: PropTypes.number.isRequired
+};
+
+DayLayer.defaultProps = {
+    numDays: DEFAULT_NUM_DAYS
 };

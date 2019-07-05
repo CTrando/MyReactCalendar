@@ -17,10 +17,8 @@ export class InputLayer extends React.PureComponent {
 }
 
 InputLayer.defaultProps = {
-    onDoubleClick: () => {
-    },
-    onEventDrop: () => {
-    },
+    onDoubleClick: () => {},
+    onEventDrop: () => {},
     onEventDragOver: (e) => e.preventDefault(),
 };
 

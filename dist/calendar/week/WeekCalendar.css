@@ -1,0 +1,19 @@
+
+.week-calendar-container {
+    height: 100%;
+    display: grid;
+    grid-template-rows: min-content 1fr;
+}
+
+
+.week-calendar {
+    position: relative;
+    height: 100%;
+    display: grid;
+    grid-template-columns: min-content 1fr;
+}
+
+.wc-container {
+    height: 100%;
+    display: grid;
+}
