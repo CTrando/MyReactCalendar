@@ -4,8 +4,7 @@ import { HourBar } from "../../bar/hour/HourBar";
 import "./WeekCalendar.css";
 import { EventCalendar } from "../event/EventCalendar";
 import { DayBar } from "../../bar/day/DayBar";
-const DEFAULT_MIN_HOUR = 8;
-const DEFAULT_MAX_HOUR = 20;
+import { DEFAULT_END_HOUR, DEFAULT_START_HOUR } from "../../Constants";
 const NUM_DAYS_IN_WEEK = 7;
 const NUM_DAYS_IN_WORK_WEEK = 5;
 export class WeekCalendar extends React.PureComponent {
@@ -17,14 +16,14 @@ export class WeekCalendar extends React.PureComponent {
   }
 
   getMinHour() {
-    if (!this.props.layers) return DEFAULT_MIN_HOUR;
+    if (!this.props.layers) return DEFAULT_START_HOUR;
     let startHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.start.getHours()); // subtracting one to have some more space
 
     return Math.max(0, Math.min(...startHours) - 1);
   }
 
   getMaxHour() {
-    if (!this.props.layers) return DEFAULT_MAX_HOUR;
+    if (!this.props.layers) return DEFAULT_END_HOUR;
     let endHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.end.getHours()); // adding one to have some more space
 
     return Math.min(Math.max(...endHours) + 1, 24);
@@ -52,7 +51,7 @@ export class WeekCalendar extends React.PureComponent {
       startHour: this.getMinHour(),
       onEventDrop: this.props.onEventDrop,
       onEventResize: this.props.onEventResize,
-      onDoubleClick: this.props.onCalendarClick,
+      onCalendarClick: this.props.onCalendarClick,
       getEvent: this.props.getEvent,
       endHour: this.getMaxHour(),
       numDays: this.state.numDays,
@@ -62,7 +61,7 @@ export class WeekCalendar extends React.PureComponent {
 
 }
 WeekCalendar.propTypes = {
-  workWeek: PropTypes.bool.isRequired,
+  workWeek: PropTypes.bool,
   layers: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
     events: PropTypes.arrayOf(PropTypes.object),
@@ -75,5 +74,12 @@ WeekCalendar.propTypes = {
 };
 WeekCalendar.defaultProps = {
   workWeek: true,
-  events: []
+  events: [],
+  layers: [],
+  onCalendarClick: () => {},
+  onEventDrop: () => {},
+  onEventResize: () => {},
+  getEvent: () => {
+    return React.createElement("div", null);
+  }
 };

@@ -6,7 +6,6 @@ export const END = "end";
 export const START = "start";
 
 export class Resizable extends React.PureComponent {
-
     startResize(e) {
         this.props.onResize(e, START);
     }

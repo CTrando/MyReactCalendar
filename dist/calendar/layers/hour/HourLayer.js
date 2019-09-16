@@ -1,6 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import "./HourLayer.css";
+import { DEFAULT_END_HOUR, DEFAULT_START_HOUR } from "../../../Constants";
+/**
+ * Renders the borders for the hours
+ */
+
 export class HourLayer extends React.PureComponent {
   getHourLines() {
     const ret = [];
@@ -19,9 +24,7 @@ export class HourLayer extends React.PureComponent {
   getHourLinesStyle() {
     const hours = this.props.endHour - this.props.startHour;
     return {
-      display: "grid",
-      gridTemplateRows: `repeat(${hours}, 1fr)`,
-      height: "100%"
+      gridTemplateRows: `repeat(${hours}, 1fr)`
     };
   }
 
@@ -36,4 +39,8 @@ export class HourLayer extends React.PureComponent {
 HourLayer.propTypes = {
   startHour: PropTypes.number.isRequired,
   endHour: PropTypes.number.isRequired
+};
+HourLayer.defaultProps = {
+  startHour: DEFAULT_START_HOUR,
+  endHour: DEFAULT_END_HOUR
 };

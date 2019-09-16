@@ -13,23 +13,24 @@ export class Resizable extends React.PureComponent {
   }
 
   getStartResize() {
+    if (!this.props.active) return null;
     return React.createElement("div", {
       draggable: true,
+      key: this.props.id + "resize-start",
       className: "resize-widget resize-widget-start",
-      onDrag: this.startResize.bind(this),
-      onDragOver: this.props.onDragOver.bind(this),
-      onDrop: this.props.onDrop.bind(this)
+      onDragOver: e => e.preventDefault(),
+      onDrag: this.startResize.bind(this)
     });
   }
 
   getEndResize() {
-    console.log(this.props);
+    if (!this.props.active) return null;
     return React.createElement("div", {
       draggable: true,
+      key: this.props.id + "resize-end",
       className: "resize-widget resize-widget-end",
-      onDrag: this.endResize.bind(this),
-      onDragOver: this.props.onDragOver.bind(this),
-      onDrop: this.props.onDrop.bind(this)
+      onDragOver: e => e.preventDefault(),
+      onDrag: this.endResize.bind(this)
     });
   }
 
@@ -42,11 +43,11 @@ export class Resizable extends React.PureComponent {
 }
 Resizable.defaultProps = {
   onResize: () => {},
-  onDrop: () => {},
-  onDragOver: () => {}
+  active: true,
+  id: "test"
 };
 Resizable.propTypes = {
   onResize: PropTypes.func,
-  onDrop: PropTypes.func,
-  onDragOver: PropTypes.func
+  active: PropTypes.bool,
+  id: PropTypes.string
 };

@@ -80,7 +80,7 @@ export class Demo extends React.PureComponent {
     }
   }
 
-  onEventResize(droppedEventId, timeEventResizedTo, typeResize) {
+  onEventResize(droppedEventId, timeEventResizedTo, resizeType) {
     let dropType = EVENT;
     let droppedEvent = this.state.events.filter(evt => evt.id === droppedEventId)[0];
 
@@ -94,9 +94,9 @@ export class Demo extends React.PureComponent {
     if (newEvent.start.getDay() !== newEvent.end.getDay()) return;
     if (newEvent.start.getDay() !== timeEventResizedTo.getDay()) return;
 
-    if (typeResize === END) {
+    if (resizeType === END) {
       newEvent.end = max(minVal, timeEventResizedTo);
-    } else if (typeResize === START) {
+    } else if (resizeType === START) {
       newEvent.start = timeEventResizedTo;
     }
 

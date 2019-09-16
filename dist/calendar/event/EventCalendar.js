@@ -6,6 +6,7 @@ import { HourLayer } from "../layers/hour/HourLayer";
 import { decodeEvent, decodeEventRespectElement } from "../../decoder/MouseDecoder";
 import { InputLayer } from "../layers/input/InputLayer";
 import { EventLayer } from "../layers/event/EventLayer";
+import { DEFAULT_END_HOUR, DEFAULT_NUM_DAYS, DEFAULT_START_HOUR } from "../../Constants";
 const RESIZE = "resize";
 const DRAG = "drag";
 export class EventCalendar extends React.PureComponent {
@@ -23,9 +24,9 @@ export class EventCalendar extends React.PureComponent {
    */
 
 
-  onDoubleClick(evt) {
+  onCalendarClick(evt) {
     const timeClickedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
-    if (this.props.onDoubleClick) this.props.onDoubleClick(timeClickedOn);
+    this.props.onCalendarClick(timeClickedOn);
   }
   /**
    * Called when a user starts dragging an event on the event calendar anywhere
@@ -42,40 +43,55 @@ export class EventCalendar extends React.PureComponent {
       dragLayer: layerName
     });
   }
+  /**
+   * Called when an event is dropped, finds what time the event was dropped on and then
+   * calls callback from props with params
+   * @param evt
+   */
+
 
   onEventDrop(evt) {
     if (this.state.dragType !== DRAG) return;
 
     try {
-      const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour); // we know it is a drag event event if the second part of conditional is not null (no typos here)
-
-      if (this.props.onEventDrop && this.state.draggedEvent && timeEventDroppedOn) this.props.onEventDrop(this.state.draggedEvent, this.state.dragLayer, timeEventDroppedOn);
+      const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour);
+      if (this.state.draggedEvent && timeEventDroppedOn) this.props.onEventDrop(this.state.draggedEvent, this.state.dragLayer, timeEventDroppedOn);
     } catch (error) {
       console.warn(error);
     }
   }
+  /**
+   * Calls resize event passed in from props
+   * @param evt the event object
+   * @param key the unique key for the event
+   * @param resizeType whether the resize occurred at the start or the end
+   */
 
-  onEventResize(evt, key, typeResize) {
-    // should add a delay here so this doesn't get called so often
+
+  onEventResize(evt, key, resizeType) {
+    // TODO consider adding a delay here so this doesn't get called so often
     this.setState({
       draggedEvent: key,
       dragType: RESIZE
     });
     const timeEventDroppedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
-    if (timeEventDroppedOn && this.props.onEventResize) this.props.onEventResize(key, timeEventDroppedOn, typeResize);
+    if (timeEventDroppedOn && this.props.onEventResize) this.props.onEventResize(key, timeEventDroppedOn, resizeType);
     evt.stopPropagation();
   }
+  /**
+   * Generates the style for the event calendar based on the number of days, start hour and end hour
+   */
+
 
   getEventCalendarWrapperStyle() {
     return {
-      position: "relative",
       gridColumn: `2 / ${this.props.numDays + 2}`,
       gridRow: `2 / ${this.props.endHour - this.props.startHour + 2}`
     };
   }
 
   render() {
-    // TODO allow them to pass in an object mapping layername to layer properties such as events, classnames etc
+    // TODO support passing in an object mapping layername to layer properties such as events, classnames etc
     const eventLayers = this.props.layers.map(layer => {
       return React.createElement(EventLayer, {
         key: layer.name,
@@ -93,6 +109,7 @@ export class EventCalendar extends React.PureComponent {
     });
     return React.createElement("div", {
       id: "event-calendar",
+      className: "event-calendar",
       style: this.getEventCalendarWrapperStyle()
     }, React.createElement(HourLayer, {
       startHour: this.props.startHour,
@@ -100,22 +117,31 @@ export class EventCalendar extends React.PureComponent {
     }), React.createElement(DayLayer, {
       numDays: this.props.numDays
     }), React.createElement(InputLayer, {
-      onDoubleClick: this.onDoubleClick.bind(this),
+      onDoubleClick: this.onCalendarClick.bind(this),
       onEventDrop: this.onEventDrop.bind(this)
     }), eventLayers);
   }
 
 }
 EventCalendar.propTypes = {
+  startHour: PropTypes.number,
+  endHour: PropTypes.number,
+  numDays: PropTypes.number,
   onEventDrop: PropTypes.func,
   onEventResize: PropTypes.func,
-  onDoubleClick: PropTypes.func,
-  startHour: PropTypes.number.isRequired,
-  endHour: PropTypes.number.isRequired,
-  numDays: PropTypes.number.isRequired,
+  onCalendarClick: PropTypes.func,
   layers: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
     events: PropTypes.arrayOf(PropTypes.object),
     eventClassName: PropTypes.string
   }))
+};
+EventCalendar.defaultProps = {
+  startHour: DEFAULT_START_HOUR,
+  endHour: DEFAULT_END_HOUR,
+  numDays: DEFAULT_NUM_DAYS,
+  onEventDrop: () => {},
+  onEventResize: () => {},
+  onCalendarClick: () => {},
+  layers: []
 };

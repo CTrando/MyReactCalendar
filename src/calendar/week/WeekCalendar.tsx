@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
 import {HourBar} from "../../bar/hour/HourBar";
 import "./WeekCalendar.css";
 import {EventCalendar} from "../event/EventCalendar";
@@ -9,10 +8,29 @@ import {DEFAULT_END_HOUR, DEFAULT_START_HOUR} from "../../Constants";
 const NUM_DAYS_IN_WEEK = 7;
 const NUM_DAYS_IN_WORK_WEEK = 5;
 
+interface WeekCalendarState {
+    numDays: number
+}
 
+interface WeekCalendarProps {
+    workWeek: boolean,
+    events: [],
+    layers: [],
+    onCalendarClick: Function,
+    onEventDrop: Function,
+    onEventResize: Function,
+    getEvent: Function,
+}
 
-export class WeekCalendar extends React.PureComponent {
-    constructor(props) {
+export class WeekCalendar extends React.PureComponent<WeekCalendarProps, WeekCalendarState> {
+    static defaultProps = {
+        workWeek: true,
+        getEvent: () => {
+            return <div/>
+        }
+    };
+
+    constructor(props: WeekCalendarProps) {
         super(props);
 
         this.state = {
@@ -32,7 +50,8 @@ export class WeekCalendar extends React.PureComponent {
         if (!this.props.layers)
             return DEFAULT_END_HOUR;
 
-        let endHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.end.getHours());
+        //let endHours = [].concat(...this.props.layers.map(e => e.events)).map(e => e.end.getHours());
+        let endHours: number[] = [];
         // adding one to have some more space
         return Math.min(Math.max(...endHours) + 1, 24);
     }
@@ -65,28 +84,3 @@ export class WeekCalendar extends React.PureComponent {
         )
     }
 }
-
-WeekCalendar.propTypes = {
-    workWeek: PropTypes.bool,
-    layers: PropTypes.arrayOf(PropTypes.shape({
-        name: PropTypes.string,
-        events: PropTypes.arrayOf(PropTypes.object),
-        eventClassName: PropTypes.string
-    })),
-    onCalendarClick: PropTypes.func,
-    onEventDrop: PropTypes.func,
-    onEventResize: PropTypes.func,
-    getEvent: PropTypes.func
-};
-
-WeekCalendar.defaultProps = {
-    workWeek: true,
-    events: [],
-    layers: [],
-    onCalendarClick: () => {},
-    onEventDrop: () => {},
-    onEventResize: () => {},
-    getEvent: () => {
-        return <div/>
-    }
-};

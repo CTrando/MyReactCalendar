@@ -8,6 +8,7 @@ import className from 'classnames';
 import React from "react";
 import PropTypes from 'prop-types';
 import { Resizable } from "../../../../resize/Resizable";
+import { DEFAULT_END_HOUR, DEFAULT_NUM_DAYS, DEFAULT_START_HOUR } from "../../../../Constants";
 const NUM_DAYS = 5;
 const INTERVALS = 5;
 const INTERVALS_PER_HOUR = 60 / INTERVALS;
@@ -107,7 +108,7 @@ export class EventLayerOuterInator extends React.PureComponent {
    */
 
 
-  getEventColumnMap(events) {
+  layoutEventsIntoColumns(events) {
     // columns is a 2D array storing lists of events per column
     let columns = []; // for each event we will determine what column we should put it in
 
@@ -139,11 +140,29 @@ export class EventLayerOuterInator extends React.PureComponent {
     return columns;
   }
   /**
+   * Populates the event object with everything that the user might want to use
+   * to render their component
+   * @param evt
+   * @returns {any}
+   */
+
+
+  hydrateEvent(evt) {
+    return Object.assign({}, evt, {
+      key: evt.start.toString() + evt.end.toString(),
+      onEventDrag: this.props.onEventDrag.bind(this),
+      onEventDrop: this.props.onEventDrop.bind(this),
+      onEventDragStart: this.props.onEventDragStart.bind(this),
+      onEventDragOver: this.props.onEventDragOver.bind(this),
+      onEventResize: (e, position) => this.props.onEventResize(e, evt.id, position)
+    });
+  }
+  /**
    * Returns divs for each events with the correct row/col start, row/end end
    */
 
 
-  layoutEventsPerDay(eventColumnMap) {
+  styleEventsInColumns(eventColumnMap) {
     const ret = [];
 
     for (let column = 0; column < eventColumnMap.length; column++) {
@@ -153,23 +172,17 @@ export class EventLayerOuterInator extends React.PureComponent {
         const style = this.getEventStyle(evt, eventColumnMap, column);
         const classNames = className(this.props.eventClassName, "event-wrapper"); // user will determine what kind of component to render based on the information given here
 
-        const eventObj = Object.assign({}, evt, {
-          key: evt.start.toString() + evt.end.toString(),
-          onEventDrag: this.props.onEventDrag.bind(this),
-          onEventDrop: this.props.onEventDrop.bind(this),
-          onEventDragStart: this.props.onEventDragStart.bind(this),
-          onEventDragOver: this.props.onEventDragOver.bind(this),
-          onEventResize: (e, position) => this.props.onEventResize(e, evt.id, position)
-        });
+        const hydratedEvt = this.hydrateEvent(evt);
+        const userComponent = this.props.getEvent(hydratedEvt);
         ret.push(React.createElement("div", {
           key: evt.id,
           style: style,
           className: classNames
         }, React.createElement(Resizable, {
-          onResize: (e, position) => this.props.onEventResize(e, evt.id, position),
-          onDrop: this.props.onEventDrop.bind(this),
-          onDragOver: this.props.onEventDragOver.bind(this)
-        }, this.props.getEvent(eventObj))));
+          active: evt.active,
+          id: evt.id,
+          onResize: (e, position) => this.props.onEventResize(e, evt.id, position)
+        }, userComponent)));
       }
     }
 
@@ -200,7 +213,7 @@ export class EventLayerOuterInator extends React.PureComponent {
     });
   }
 
-  layout() {
+  layoutEventsIntoDays() {
     const ret = [];
     let eventsByDay = this.getEventsByDays();
     let idx = 0;
@@ -213,14 +226,16 @@ export class EventLayerOuterInator extends React.PureComponent {
         // so the first column has X events, the second has Y events and so on, and each
         // event should be rendered in its respective column within the certain day
         const sortedEvents = this.sortEvents(eventsPerDay);
-        const eventColumnMap = this.getEventColumnMap(sortedEvents);
-        let styledEvents = this.layoutEventsPerDay(eventColumnMap);
+        const eventColumnMap = this.layoutEventsIntoColumns(sortedEvents);
+        let styledEvents = this.styleEventsInColumns(eventColumnMap); // put the styled events into one day column
+
         const styledDays = React.createElement("div", {
           key: idx,
           style: this.getDayStyle(eventColumnMap.length)
         }, styledEvents);
         ret.push(styledDays);
       } else {
+        // no events push blank column
         ret.push(React.createElement("div", {
           key: idx
         }));
@@ -231,7 +246,7 @@ export class EventLayerOuterInator extends React.PureComponent {
   }
 
   render() {
-    return React.createElement(React.Fragment, null, this.layout());
+    return React.createElement(React.Fragment, null, this.layoutEventsIntoDays());
   }
 
 }
@@ -248,4 +263,18 @@ EventLayerOuterInator.propTypes = {
   onEventResize: PropTypes.func,
   onEventDragStart: PropTypes.func,
   onEventDragOver: PropTypes.func
+};
+EventLayerOuterInator.defaultProps = {
+  name: "test",
+  eventClassName: "",
+  getEvent: () => {},
+  events: [],
+  startHour: DEFAULT_START_HOUR,
+  endHour: DEFAULT_END_HOUR,
+  numDays: DEFAULT_NUM_DAYS,
+  onEventDrag: () => {},
+  onEventDrop: () => {},
+  onEventResize: () => {},
+  onEventDragStart: () => {},
+  onEventDragOver: () => {}
 };
