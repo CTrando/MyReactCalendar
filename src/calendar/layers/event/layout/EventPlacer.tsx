@@ -1,22 +1,54 @@
 /**
- * Event layer outer inator!!
+ * EventView layer outer inator!!
  *
  * Will lay out events in the given column
  **/
 
 import {differenceInMinutes, getDay, isBefore} from 'date-fns';
-import className from 'classnames';
-import React from "react";
-import PropTypes from 'prop-types';
-import {Resizable} from "../../../../resize/Resizable";
-import {DEFAULT_END_HOUR, DEFAULT_NUM_DAYS, DEFAULT_START_HOUR} from "../../../../Constants";
+import * as React from "react";
+import * as className from "classnames";
+import {ReactElement} from "react";
+import {ResizableEvent} from "../../../../resize/ResizableEvent";
+import {Event} from "../../../event/Event";
+import {EventViewProps} from "../../../event/EventView";
 
 const NUM_DAYS = 5;
 const INTERVALS = 5;
 const INTERVALS_PER_HOUR = 60 / INTERVALS;
 
-export class EventLayerOuterInator extends React.PureComponent {
+interface IEventLayerContext {
+    startHour: number;
+    endHour: number;
+    eventClassName: string;
 
+    getEvent(props: EventViewProps): ReactElement;
+
+    onEventDrag(dragEvent: React.DragEvent, evt: Event): void;
+
+    onEventDrop(dropEvent: React.MouseEvent): void;
+
+    onEventDragStart(dragStartEvent: React.DragEvent): void;
+
+    onEventDragOver(dragOverEvent: React.DragEvent): void;
+
+    onEventResize(resizeEvent: React.DragEvent, evt: Event, resizeType: string): void;
+}
+
+interface IEventPlacer {
+    getEventGridCol(event: Event, eventColumnMap: Event[][], columnIndex: number): string;
+
+    getEventStyle(context: IEventLayerContext, event: Event, eventColumnMap: Event[][], columnIndex: number): object;
+
+    getDayStyle(context: IEventLayerContext, gridColumns: number) : object;
+
+    layout(context: IEventLayerContext, events: Event[]): ReactElement[];
+
+    dayToEvents(events: Event[]): Event[][];
+
+    sortEvents(events: Event[]): Event[];
+}
+
+export class EventPlacer implements IEventPlacer {
     /**
      * Returns the event column style inside a day
      *
@@ -29,7 +61,7 @@ export class EventLayerOuterInator extends React.PureComponent {
      *
      * This method handles the internal styling of each event so the grid works out
      */
-    getEventColumnStyle(event, eventColumnMap, columnIndex) {
+    getEventGridCol(event: Event, eventColumnMap: Array<Array<Event>>, columnIndex: number): string {
         // start endIndex one more than column index because if
         // we start with column index, it will immediately conflict with itself
         // in its own column
@@ -40,50 +72,46 @@ export class EventLayerOuterInator extends React.PureComponent {
             // check if events in the next column are contained by our current column
             // if so, then we cannot extend our current event anymore so return early
             if (eventsPerColumn.some((e) => this.isContainedBy(e, event))) {
-                return {
-                    gridColumn: `${columnIndex + 1}/${endIndex}`
-                };
+                return `${columnIndex + 1}/${endIndex}`;
             }
         }
 
         // event can extend all the way to the end because no events were contained by it
-        return {
-            gridColumn: `${columnIndex + 1}/${eventColumnMap.length + 1}`
-        };
+        return `${columnIndex + 1}/${eventColumnMap.length + 1}`;
     }
 
     /**
      * Gets the styling for the events, including row style and column style
      */
-    getEventStyle(event, eventColumnMap, columnIndex) {
+    getEventStyle(context: IEventLayerContext, event: Event, eventColumnMap: Array<Array<Event>>, columnIndex: number): object {
         const eventStart = event.start;
         const eventEnd = event.end;
-        const gridColPos = this.getEventColumnStyle(event, eventColumnMap, columnIndex);
+        const gridCol = this.getEventGridCol(event, eventColumnMap, columnIndex);
 
-        const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - this.props.startHour) * INTERVALS_PER_HOUR)
+        const startTime5MinuteIntervals = Math.floor((eventStart.getHours() - context.startHour) * INTERVALS_PER_HOUR)
             + Math.floor(eventStart.getMinutes() / INTERVALS) + 1;
-        const endTime5MinuteIntervals = Math.floor((eventEnd.getHours() - this.props.startHour) * INTERVALS_PER_HOUR)
+        const endTime5MinuteIntervals = Math.floor((eventEnd.getHours() - context.startHour) * INTERVALS_PER_HOUR)
             + Math.floor(eventEnd.getMinutes() / INTERVALS) + 1;
 
         return {
             gridRow: `${startTime5MinuteIntervals}/${endTime5MinuteIntervals}`,
-            ...gridColPos,
+            gridCol: gridCol,
         };
     }
 
     /**
      * Returns whether evt1 is contained by evt2
      */
-    isContainedBy(evt1, evt2) {
+    isContainedBy(evt1: Event, evt2: Event) {
         return isBefore(evt2.start, evt1.start) && isBefore(evt1.end, evt2.end);
     }
 
     /**
      * Returns an array of lists where the indices represent the days and the lists are the events for that specific day
      */
-    getEventsByDays() {
+    dayToEvents(events: Event[]): Event[][] {
         const ret = new Array(NUM_DAYS);
-        for (let event of this.props.events) {
+        for (let event of events) {
             // arrays start at 0 so subtract 1 from it since Monday is 1 when I want it to be 0
             let day = getDay(event.start) - 1;
             if (!ret[day]) {
@@ -91,11 +119,14 @@ export class EventLayerOuterInator extends React.PureComponent {
             }
             ret[day].push(event);
         }
+        for (let i = 0; i < ret.length; i++) {
+            ret[i] = this.sortEvents(ret[i]);
+        }
         return ret;
     }
 
     /**
-     * Takes an array of events per a day, for example all events for Monday and then arranges them such that
+     * Takes an array of events per day, for example all events for Monday and then arranges them such that
      * they would be most optimally shown in columns in the case that some of them may collide
      *
      * e.g.
@@ -108,8 +139,8 @@ export class EventLayerOuterInator extends React.PureComponent {
      *
      * @param events array of events per a day
      */
-    layoutEventsIntoColumns(events) {
-        // columns is a 2D array storing lists of events per column
+    layoutEventsIntoGridColumns(events: Event[]) {
+        // columns is a 2D array storing lists of events per grid column
         let columns = [];
 
         // for each event we will determine what column we should put it in
@@ -141,48 +172,43 @@ export class EventLayerOuterInator extends React.PureComponent {
         return columns;
     }
 
-
-    /**
-     * Populates the event object with everything that the user might want to use
-     * to render their component
-     * @param evt
-     * @returns {any}
-     */
-    hydrateEvent(evt) {
-        return Object.assign({}, evt, {
-            key: evt.start.toString() + evt.end.toString(),
-            onEventDrag: this.props.onEventDrag.bind(this),
-            onEventDrop: this.props.onEventDrop.bind(this),
-            onEventDragStart: this.props.onEventDragStart.bind(this),
-            onEventDragOver: this.props.onEventDragOver.bind(this),
-            onEventResize: (e, position) => this.props.onEventResize(e, evt.id, position)
-        });
+    createEventViewProps(context: IEventLayerContext, event: Event): EventViewProps {
+        return {
+            event: event,
+            onEventDrag: context.onEventDrag,
+            onEventDrop: context.onEventDrop,
+            onEventDragStart: context.onEventDragStart,
+            onEventDragOver: context.onEventDragOver
+        }
     }
 
     /**
+     * Given event grid column map, essentially within one day, e.g Monday, how many grid columns are needed to
+     * represent the events without their components overlapping
+     *
      * Returns divs for each events with the correct row/col start, row/end end
      */
-    styleEventsInColumns(eventColumnMap) {
+    styleEventsInGridColumns(context: IEventLayerContext, eventGridColumnMap: Event[][]) {
         const ret = [];
 
-        for (let column = 0; column < eventColumnMap.length; column++) {
-            const eventsPerColumn = eventColumnMap[column];
+        for (let column = 0; column < eventGridColumnMap.length; column++) {
+            const eventsPerColumn = eventGridColumnMap[column];
 
             for (let evt of eventsPerColumn) {
-                const style = this.getEventStyle(evt, eventColumnMap, column);
-                const classNames = className(this.props.eventClassName, "event-wrapper");
+                const style = this.getEventStyle(context, evt, eventGridColumnMap, column);
+                const classNames = className(context.eventClassName, "event-wrapper");
 
                 // user will determine what kind of component to render based on the information given here
-                const hydratedEvt = this.hydrateEvent(evt);
-                const userComponent = this.props.getEvent(hydratedEvt);
+                const eventProps = this.createEventViewProps(context, evt);
+                const userComponent = context.getEvent(eventProps);
 
                 ret.push(
                     <div key={evt.id} style={style} className={classNames}>
-                        <Resizable active={evt.active}
-                                   id={evt.id}
-                                   onResize={(e, position) => this.props.onEventResize(e, evt.id, position)}>
+                        <ResizableEvent active={evt.resize}
+                                        evt={evt}
+                                        onEventResize={context.onEventResize}>
                             {userComponent}
-                        </Resizable>
+                        </ResizableEvent>
                     </div>
                 );
             }
@@ -190,16 +216,16 @@ export class EventLayerOuterInator extends React.PureComponent {
         return ret;
     }
 
-    getDayStyle(column) {
-        const earliestHour = this.props.startHour;
-        const latestHour = this.props.endHour;
+    getDayStyle(context: IEventLayerContext, gridColumns: number) : object {
+        const earliestHour = context.startHour;
+        const latestHour = context.endHour;
 
         const diff = latestHour - earliestHour;
         const diffIn5MinuteIntervals = diff * INTERVALS_PER_HOUR;
 
         return {
             display: "grid",
-            gridTemplateColumns: `repeat(${column}, ${100 / column}%)`,
+            gridTemplateColumns: `repeat(${gridColumns}, ${100 / gridColumns}%)`,
             gridTemplateRows: `repeat(${diffIn5MinuteIntervals}, 1fr)`,
         };
     }
@@ -207,7 +233,11 @@ export class EventLayerOuterInator extends React.PureComponent {
     /**
      * Sort events by duration - longest duration first
      */
-    sortEvents(events) {
+    sortEvents(events: Event[]): Event[] {
+        if (!events) {
+            return events;
+        }
+
         return events.sort((e1, e2) => {
             let e1duration = differenceInMinutes(e1.start, e1.end);
             let e2duration = differenceInMinutes(e2.start, e2.end);
@@ -216,24 +246,23 @@ export class EventLayerOuterInator extends React.PureComponent {
         });
     }
 
-    layoutEventsIntoDays() {
+    layout(context: IEventLayerContext, events: Event[]): ReactElement[] {
         const ret = [];
-        let eventsByDay = this.getEventsByDays();
+        let dayToEvents = this.dayToEvents(events);
 
         let idx = 0;
-        for (let eventsPerDay of eventsByDay) {
+        for (let eventsPerDay of dayToEvents) {
             idx++;
             if (eventsPerDay) {
                 // maps for a specific day how many columns are needed to represent them with conflicts
                 // so the first column has X events, the second has Y events and so on, and each
-                // event should be rendered in its respective column within the certain day
-                const sortedEvents = this.sortEvents(eventsPerDay);
-                const eventColumnMap = this.layoutEventsIntoColumns(sortedEvents);
-                let styledEvents = this.styleEventsInColumns(eventColumnMap);
+                // event should be rendered in its respective grid column within the certain day
+                const eventGridColumnMap = this.layoutEventsIntoGridColumns(eventsPerDay);
+                const styledEvents = this.styleEventsInGridColumns(context, eventGridColumnMap);
 
                 // put the styled events into one day column
                 const styledDays = (
-                    <div key={idx} style={this.getDayStyle(eventColumnMap.length)}>
+                    <div key={idx} style={this.getDayStyle(context, eventGridColumnMap.length)}>
                         {styledEvents}
                     </div>
                 );
@@ -246,47 +275,4 @@ export class EventLayerOuterInator extends React.PureComponent {
         }
         return ret;
     }
-
-    render() {
-        return (
-            <React.Fragment>
-                {this.layoutEventsIntoDays()}
-            </React.Fragment>
-        );
-    }
 }
-
-EventLayerOuterInator.propTypes = {
-    name: PropTypes.string.isRequired,
-    eventClassName: PropTypes.string,
-    getEvent: PropTypes.func,
-
-    events: PropTypes.array.isRequired,
-    startHour: PropTypes.number.isRequired,
-    endHour: PropTypes.number.isRequired,
-    numDays: PropTypes.number.isRequired,
-
-    onEventDrag: PropTypes.func,
-    onEventDrop: PropTypes.func,
-    onEventResize: PropTypes.func,
-    onEventDragStart: PropTypes.func,
-    onEventDragOver: PropTypes.func,
-};
-
-EventLayerOuterInator.defaultProps = {
-    name: "test",
-    eventClassName: "",
-    getEvent: () => {
-    },
-
-    events: [],
-    startHour: DEFAULT_START_HOUR,
-    endHour: DEFAULT_END_HOUR,
-    numDays: DEFAULT_NUM_DAYS,
-
-    onEventDrag: () => {},
-    onEventDrop: () => {},
-    onEventResize: () => {},
-    onEventDragStart: () => {},
-    onEventDragOver: () => {},
-};

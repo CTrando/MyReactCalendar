@@ -1,38 +1,46 @@
-import React from 'react';
+import * as React from 'react';
+import {ReactElement} from 'react';
 import {
-    max,
     addHours,
-    addSeconds,
     addMinutes,
+    addSeconds,
     differenceInSeconds,
+    max,
+    setDay,
     setHours,
-    setMinutes,
-    setSeconds,
     setMilliseconds,
-    setDay
+    setMinutes,
+    setSeconds
 } from 'date-fns';
+import {EventView, EventViewProps} from "../calendar/event/EventView";
 import {Event} from "../calendar/event/Event";
 import {WeekCalendar} from "../calendar/week/WeekCalendar";
-import {END, START} from "../resize/Resizable";
+import {END, START} from "../resize/ResizableEvent";
 
 import "./demo.css";
+import {Layer} from "../calendar/layers/Layer";
 
 const EVENT = "event";
 const PREFERENCE = "preference";
 
-export class Demo extends React.PureComponent {
+interface DemoState {
+    numEventsCreated: number;
+    events: Event[];
+    preferences: Event[];
+}
 
-    getEvent(props) {
+export class Demo extends React.PureComponent<any, DemoState> {
+    getEvent(props: EventViewProps): ReactElement {
         return (
-            <Event {...props}/>
+            <EventView {...props}/>
         )
     }
 
-    constructor(props) {
+    constructor(props: any) {
         super(props);
 
         this.state = {
-            numCreated: 0,
+            numEventsCreated: 0,
             events: [
                 {
                     id: "event1",
@@ -80,11 +88,9 @@ export class Demo extends React.PureComponent {
         }
     }
 
-    onEventDrop(droppedEventId, layerName, timeEventDroppedOn) {
+    onEventDrop(droppedEvent: Event, layerName: string, timeEventDroppedOn: Date) {
         let dropType = EVENT;
-        let droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
         if (!droppedEvent) {
-            droppedEvent = this.state.preferences.filter((evt) => evt.id === droppedEventId)[0];
             dropType = PREFERENCE;
         }
 
@@ -99,29 +105,27 @@ export class Demo extends React.PureComponent {
             return;
 
         if (dropType === EVENT) {
-            const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
+            const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt !== droppedEvent);
             this.setState({
                 events: [...eventsWithoutDroppedEvent, newEvent]
             });
         } else {
-            const preferencesWithoutDroppedEvent = this.state.preferences.filter((evt) => evt.id !== droppedEventId);
+            const preferencesWithoutDroppedEvent = this.state.preferences.filter((evt) => evt !== droppedEvent);
             this.setState({
                 preferences: [...preferencesWithoutDroppedEvent, newEvent]
             });
         }
     }
 
-    onEventResize(droppedEventId, timeEventResizedTo, resizeType) {
+    onEventResize(resizedEvent: Event, timeEventResizedTo: Date, resizeType: string) {
         let dropType = EVENT;
-        let droppedEvent = this.state.events.filter((evt) => evt.id === droppedEventId)[0];
-        if (!droppedEvent) {
-            droppedEvent = this.state.preferences.filter((evt) => evt.id === droppedEventId)[0];
+        if (!resizedEvent) {
             dropType = PREFERENCE;
         }
 
-        const minVal = addMinutes(droppedEvent.start, 30);
+        const minVal = addMinutes(resizedEvent.start, 30);
 
-        const newEvent = Object.assign({}, droppedEvent);
+        const newEvent = Object.assign({}, resizedEvent);
 
         if (newEvent.start.getDay() !== newEvent.end.getDay())
             return;
@@ -136,27 +140,27 @@ export class Demo extends React.PureComponent {
         }
 
         if (dropType === EVENT) {
-            const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt.id !== droppedEventId);
+            const eventsWithoutDroppedEvent = this.state.events.filter((evt) => evt !== resizedEvent);
             this.setState({
                 events: [...eventsWithoutDroppedEvent, newEvent]
             });
         } else {
-            const preferencesWithoutDropEvent = this.state.preferences.filter((evt) => evt.id !== droppedEventId);
+            const preferencesWithoutDropEvent = this.state.preferences.filter((evt) => evt !== resizedEvent);
             this.setState({
                 preferences: [...preferencesWithoutDropEvent, newEvent]
             });
         }
     }
 
-    onCalendarClick(timeClickedOn) {
+    onCalendarClick(timeClickedOn: Date) {
         const start = timeClickedOn;
         const end = addHours(timeClickedOn, 1);
 
         if (start.getDay() !== end.getDay())
             return;
 
-        const newEvent = {id: "created-event" + this.state.numCreated, start: start, end: end};
-        this.setState({numCreated: this.state.numCreated + 1, events: [...this.state.events, newEvent]});
+        const newEvent = {id: "created-event" + this.state.numEventsCreated, start: start, end: end};
+        this.setState({numEventsCreated: this.state.numEventsCreated + 1, events: [...this.state.events, newEvent]});
     }
 
 
@@ -164,7 +168,7 @@ export class Demo extends React.PureComponent {
         const eventComponents = this.state.events;
         const preferenceComponents = this.state.preferences;
 
-        const layers = [
+        const layers: Layer[] = [
             {name: EVENT, events: eventComponents, eventClassName: EVENT},
             {name: PREFERENCE, events: preferenceComponents, eventClassName: PREFERENCE}
         ];

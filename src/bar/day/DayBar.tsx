@@ -1,17 +1,13 @@
-import React from 'react';
+import * as React from 'react';
 import "./DayBar.css";
-import PropTypes from 'prop-types';
 import {startOfWeek, addDays, format} from "date-fns";
 
-export class DayBar extends React.PureComponent {
+interface DayBarProps {
+    numDays: number,
+}
 
-    getDayBarStyle() {
-        return {
-            gridTemplateColumns: `min-content repeat(${this.props.numDays}, 1fr)`
-        };
-    }
-
-    getDayStyle(start) {
+export class DayBar extends React.PureComponent<any, DayBarProps> {
+    getDayStyle(start: number) {
         return {
             gridColumn: `${start} / ${start+1}`
         };
@@ -40,7 +36,3 @@ export class DayBar extends React.PureComponent {
         )
     }
 }
-
-DayBar.propTypes = {
-    numDays: PropTypes.number.isRequired
-};

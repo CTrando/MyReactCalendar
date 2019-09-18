@@ -1,12 +1,18 @@
-import React from 'react';
+import *  as React from 'react';
 import "./DayLayer.css";
-import PropTypes from 'prop-types';
 import {DEFAULT_NUM_DAYS} from "../../../Constants";
+
+interface DayLayerProps {
+    numDays: number
+}
 
 /**
  * Renders the borders for the days
  */
-export class DayLayer extends React.PureComponent {
+export class DayLayer extends React.PureComponent<DayLayerProps> {
+    static defaultProps = {
+        numDays: DEFAULT_NUM_DAYS
+    };
 
     getDayLines() {
         const ret = [];
@@ -32,11 +38,3 @@ export class DayLayer extends React.PureComponent {
         );
     }
 }
-
-DayLayer.propTypes = {
-    numDays: PropTypes.number.isRequired
-};
-
-DayLayer.defaultProps = {
-    numDays: DEFAULT_NUM_DAYS
-};

@@ -1,13 +1,22 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
 
 import "./HourLayer.css"
 import {DEFAULT_END_HOUR, DEFAULT_START_HOUR} from "../../../Constants";
 
+interface HourLayerProps {
+    startHour: number,
+    endHour: number
+}
+
 /**
  * Renders the borders for the hours
  */
-export class HourLayer extends React.PureComponent {
+export class HourLayer extends React.PureComponent<HourLayerProps> {
+    static defaultProps = {
+        startHour: DEFAULT_START_HOUR,
+        endHour: DEFAULT_END_HOUR,
+    };
+
     getHourLines() {
         const ret = [];
         for (let i = this.props.startHour; i < this.props.endHour; i++) {
@@ -35,13 +44,3 @@ export class HourLayer extends React.PureComponent {
         );
     }
 }
-
-HourLayer.propTypes = {
-    startHour: PropTypes.number.isRequired,
-    endHour: PropTypes.number.isRequired
-};
-
-HourLayer.defaultProps = {
-    startHour: DEFAULT_START_HOUR,
-    endHour: DEFAULT_END_HOUR,
-};

@@ -1,26 +1,38 @@
-import React from 'react';
+import * as React from 'react';
+import {Event} from "../calendar/event/Event";
 import "./Resizable.css";
-import PropTypes from 'prop-types';
 
 export const END = "end";
 export const START = "start";
 
-export class Resizable extends React.PureComponent {
-    startResize(e) {
-        this.props.onResize(e, START);
+type ResizableEventProps = {
+    onEventResize(evt: React.DragEvent, e: Event, resizeType: string): void;
+    active: boolean;
+    evt: Event;
+}
+
+export class ResizableEvent extends React.PureComponent<ResizableEventProps> {
+    static defaultProps = {
+        onEventResize: () => {},
+        active: true,
+        id: "test"
+    };
+
+    startResize(evt: React.DragEvent) {
+        this.props.onEventResize(evt, this.props.evt, START);
     }
 
-    endResize(e) {
-        this.props.onResize(e, END);
+    endResize(evt: React.DragEvent) {
+        this.props.onEventResize(evt, this.props.evt, END);
     }
 
-    getStartResize() {
+    getStartResizeWidget() {
         if (!this.props.active)
             return null;
 
         return (
             <div draggable={true}
-                 key={this.props.id + "resize-start"}
+                 key={this.props.evt.id + "resize-start"}
                  className="resize-widget resize-widget-start"
                  onDragOver={(e) => e.preventDefault()}
                  onDrag={this.startResize.bind(this)}
@@ -28,13 +40,13 @@ export class Resizable extends React.PureComponent {
         )
     }
 
-    getEndResize() {
+    getEndResizeWidget() {
         if (!this.props.active)
             return null;
 
         return (
             <div draggable={true}
-                 key={this.props.id + "resize-end"}
+                 key={this.props.evt.id + "resize-end"}
                  className="resize-widget resize-widget-end"
                  onDragOver={(e) => e.preventDefault()}
                  onDrag={this.endResize.bind(this)}
@@ -45,23 +57,10 @@ export class Resizable extends React.PureComponent {
     render() {
         return (
             <div className="resize-context">
-                {this.getStartResize()}
+                {this.getStartResizeWidget()}
                 {this.props.children}
-                {this.getEndResize()}
+                {this.getEndResizeWidget()}
             </div>
         )
     }
 }
-
-Resizable.defaultProps = {
-    onResize: () => {
-    },
-    active: true,
-    id: "test"
-};
-
-Resizable.propTypes = {
-    onResize: PropTypes.func,
-    active: PropTypes.bool,
-    id: PropTypes.string
-};

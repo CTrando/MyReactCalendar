@@ -1,23 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-
+import * as React from 'react';
 import "./HourBar.css";
 
 import {format} from "date-fns";
 
-export class HourBar extends React.PureComponent {
+interface HourBarProps {
+    startHour: number,
+    endHour: number
+}
 
-    getHourBarStyle() {
-        const hours = this.props.endHour - this.props.startHour;
-
-        return {
-            display: "grid",
-            gridTemplateRows: `repeat(${hours}, 1fr)`,
-            height: "100%",
-        };
-    }
-
-    getHourStyle(start) {
+export class HourBar extends React.PureComponent<any, HourBarProps> {
+    getHourStyle(start: number) {
         return {
             gridRow: `${start} / ${start + 1}`
         };
@@ -53,8 +45,3 @@ export class HourBar extends React.PureComponent {
         );
     }
 }
-
-HourBar.propTypes = {
-    startHour: PropTypes.number.isRequired,
-    endHour: PropTypes.number.isRequired
-};

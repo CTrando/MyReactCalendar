@@ -1,6 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-
+import * as React from 'react';
 import "./EventCalendar.css";
 import {DayLayer} from "../layers/day/DayLayer";
 import {HourLayer} from "../layers/hour/HourLayer";
@@ -8,55 +6,81 @@ import {decodeEvent, decodeEventRespectElement} from "../../decoder/MouseDecoder
 import {InputLayer} from "../layers/input/InputLayer";
 import {EventLayer} from "../layers/event/EventLayer";
 import {DEFAULT_END_HOUR, DEFAULT_NUM_DAYS, DEFAULT_START_HOUR} from "../../Constants";
+import {ReactElement} from "react";
+import {Layer} from "../layers/Layer";
+import {EventViewProps} from "./EventView";
+import {Event} from "./Event";
 
 const RESIZE = "resize";
 const DRAG = "drag";
 
-export class EventCalendar extends React.PureComponent {
+interface EventCalendarState {
+    draggedEvent: Event,
+    dragType: string,
+    dragLayer: string
+}
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            draggedEvent: null,
-            dragType: null,
-            dragLayer: null
-        }
-    }
+interface EventCalendarProps {
+    onCalendarClick(timeClickedOn: Date): void;
+
+    onEventDrop(evt: Event, dragLayer: string, timeEventDropped: Date): void;
+
+    onEventResize(evt: Event, timeEventResizedTo: Date, resizeType: string): void;
+
+    getEvent(props: EventViewProps): ReactElement;
+
+    numDays: number;
+    startHour: number;
+    endHour: number;
+    layers: Layer[];
+}
+
+export class EventCalendar extends React.PureComponent<EventCalendarProps, EventCalendarState> {
+
+    static defaultProps = {
+        startHour: DEFAULT_START_HOUR,
+        endHour: DEFAULT_END_HOUR,
+        numDays: DEFAULT_NUM_DAYS,
+        onEventDrop: () => {},
+        onEventResize: () => {},
+        onCalendarClick: () => {},
+        layers: []
+    };
 
     /**
      * Called when a user clicks anywhere on the event calendar
      * @param evt the click event
      */
-    onCalendarClick(evt) {
-        const timeClickedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
-
+    onCalendarClick(evt: Event) {
+        const timeClickedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour)!;
         this.props.onCalendarClick(timeClickedOn);
     }
 
     /**
      * Called when a user starts dragging an event on the event calendar anywhere
+     * @param dragEvent
      * @param evt the drag event
-     * @param key the unique key for the given event
      * @param layerName the name of which layer the event should be dragged on
      */
-    onEventDrag(evt, key, layerName) {
-        this.setState({draggedEvent: key, dragType: DRAG, dragLayer: layerName});
+    onEventDrag(dragEvent: React.DragEvent, evt: Event, layerName: string) {
+        this.setState({draggedEvent: evt, dragType: DRAG, dragLayer: layerName});
     }
 
     /**
      * Called when an event is dropped, finds what time the event was dropped on and then
      * calls callback from props with params
-     * @param evt
+     * @param dropEvent
      */
-    onEventDrop(evt) {
+    onEventDrop(dropEvent: React.MouseEvent) {
         if (this.state.dragType !== DRAG)
             return;
 
         try {
-            const timeEventDroppedOn = decodeEventRespectElement(evt, this.props.numDays, this.props.startHour, this.props.endHour);
+            const timeEventDroppedOn = decodeEventRespectElement(dropEvent, this.props.numDays, this.props.startHour, this.props.endHour);
 
-            if (this.state.draggedEvent && timeEventDroppedOn)
+            if (this.state.draggedEvent && timeEventDroppedOn) {
                 this.props.onEventDrop(this.state.draggedEvent, this.state.dragLayer, timeEventDroppedOn);
+            }
         } catch (error) {
             console.warn(error);
         }
@@ -64,29 +88,32 @@ export class EventCalendar extends React.PureComponent {
 
     /**
      * Calls resize event passed in from props
-     * @param evt the event object
-     * @param key the unique key for the event
+     * @param resizeEvent the event object
+     * @param evt event that got resized
      * @param resizeType whether the resize occurred at the start or the end
      */
-    onEventResize(evt, key, resizeType) {
+    onEventResize(resizeEvent: React.DragEvent, evt: Event, resizeType: string) {
         // TODO consider adding a delay here so this doesn't get called so often
-        this.setState({draggedEvent: key, dragType: RESIZE});
-        const timeEventDroppedOn = decodeEvent(evt, this.props.numDays, this.props.startHour, this.props.endHour);
+        this.setState({draggedEvent: evt, dragType: RESIZE});
+        const timeEventDroppedOn = decodeEvent(resizeEvent, this.props.numDays, this.props.startHour, this.props.endHour);
 
         if (timeEventDroppedOn && this.props.onEventResize)
-            this.props.onEventResize(key, timeEventDroppedOn, resizeType);
+            this.props.onEventResize(evt, timeEventDroppedOn, resizeType);
 
-        evt.stopPropagation();
+        resizeEvent.stopPropagation();
     }
 
     /**
      * Generates the style for the event calendar based on the number of days, start hour and end hour
      */
     getEventCalendarWrapperStyle() {
-        return {
+        let ret = {
             gridColumn: `2 / ${this.props.numDays + 2}`,
             gridRow: `2 / ${this.props.endHour - this.props.startHour + 2}`
-        }
+        };
+        console.log(ret);
+        console.log(this.props);
+        return ret;
     }
 
     render() {
@@ -117,37 +144,8 @@ export class EventCalendar extends React.PureComponent {
                 <InputLayer
                     onDoubleClick={this.onCalendarClick.bind(this)}
                     onEventDrop={this.onEventDrop.bind(this)}/>
-
                 {eventLayers}
             </div>
         )
     }
 }
-
-EventCalendar.propTypes = {
-    startHour: PropTypes.number,
-    endHour: PropTypes.number,
-    numDays: PropTypes.number,
-
-    onEventDrop: PropTypes.func,
-    onEventResize: PropTypes.func,
-    onCalendarClick: PropTypes.func,
-
-    layers: PropTypes.arrayOf(PropTypes.shape({
-        name: PropTypes.string,
-        events: PropTypes.arrayOf(PropTypes.object),
-        eventClassName: PropTypes.string
-    })),
-};
-
-EventCalendar.defaultProps = {
-    startHour: DEFAULT_START_HOUR,
-    endHour: DEFAULT_END_HOUR,
-    numDays: DEFAULT_NUM_DAYS,
-
-    onEventDrop: () => {},
-    onEventResize: () => {},
-    onCalendarClick: () => {},
-
-    layers: []
-};
